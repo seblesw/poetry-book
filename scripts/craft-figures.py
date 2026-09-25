@@ -509,18 +509,74 @@ def rain(base: Image.Image) -> None:
         draw.line([(x, y), (x - 16, y + 42)], fill=(210, 220, 228, 140), width=2)
 
 
+def horse(base: Image.Image, x: float, y: float, s: float = 1.0) -> None:
+    coat = (176, 112, 52, 255)
+    dark = (62, 38, 22, 255)
+    draw = ImageDraw.Draw(base)
+    draw.polygon(
+        [(x + 8 * s, y + 24 * s), (x - 78 * s, y - 8 * s), (x - 36 * s, y + 78 * s), (x + 16 * s, y + 58 * s)],
+        fill=dark,
+    )
+    draw.ellipse([x, y, x + 270 * s, y + 112 * s], fill=coat)
+    draw.polygon(
+        [
+            (x + 198 * s, y + 28 * s), (x + 248 * s, y - 78 * s),
+            (x + 304 * s, y - 52 * s), (x + 236 * s, y + 58 * s),
+        ],
+        fill=coat,
+    )
+    draw.ellipse([x + 248 * s, y - 132 * s, x + 368 * s, y - 36 * s], fill=coat)
+    draw.ellipse([x + 328 * s, y - 92 * s, x + 402 * s, y - 34 * s], fill=(146, 92, 42, 255))
+    draw.polygon([(x + 268 * s, y - 112 * s), (x + 286 * s, y - 176 * s), (x + 312 * s, y - 102 * s)], fill=coat)
+    draw.polygon(
+        [(x + 228 * s, y - 64 * s), (x + 206 * s, y + 24 * s), (x + 252 * s, y + 16 * s), (x + 274 * s, y - 72 * s)],
+        fill=dark,
+    )
+    draw.ellipse([x + 308 * s, y - 108 * s, x + 326 * s, y - 90 * s], fill=INK)
+    draw.line([(x + 250 * s, y - 70 * s), (x + 360 * s, y - 48 * s)], fill=GOLD, width=3)
+    for dx, lean in ((28, -18), (86, 10), (168, -8), (214, 22)):
+        draw.polygon(
+            [
+                (x + dx * s, y + 96 * s),
+                (x + (dx + 22) * s, y + 96 * s),
+                (x + (dx + 22 + lean) * s, y + 188 * s),
+                (x + (dx + lean) * s, y + 188 * s),
+            ],
+            fill=dark,
+        )
+        draw.ellipse([x + (dx + lean - 6) * s, y + 176 * s, x + (dx + lean + 28) * s, y + 198 * s], fill=(42, 28, 18, 255))
+
+
+def story_back(base: Image.Image, key: str) -> None:
+    draw = ImageDraw.Draw(base)
+    if key == "01":
+        wood = (92, 58, 36, 235)
+        draw.rounded_rectangle((560, 1148, 1040, 1236), 12, fill=wood)
+        draw.rectangle((620, 1236, 668, 1410), fill=wood)
+        draw.rectangle((930, 1236, 978, 1410), fill=wood)
+        draw.rectangle((12, 820, 210, 1520), outline=(62, 40, 28, 230), width=14)
+        draw.rectangle((40, 860, 182, 1520), fill=(26, 18, 14, 170))
+    elif key == "02":
+        draw.rectangle((70, 760, 250, 1460), outline=(62, 40, 28, 230), width=16)
+        draw.rectangle((96, 800, 224, 1460), fill=(32, 22, 16, 150))
+
+
 def story_front(base: Image.Image, key: str) -> None:
     draw = ImageDraw.Draw(base)
     if key == "01":
-        draw.rectangle([190, 760, 214, 1040], fill=CREAM)
-        draw.rectangle([400, 740, 424, 1020], fill=CREAM)
-        draw.polygon([(170, 760), (450, 720), (450, 770), (170, 812)], fill=CREAM)
-        draw.polygon([(170, 1000), (460, 960), (460, 1010), (170, 1050)], fill=CREAM)
-        draw.rectangle([200, 1030, 224, 1280], fill=CREAM)
-        draw.rectangle([400, 1000, 424, 1260], fill=CREAM)
-        paste_poly(base, [(200, 980), (430, 950), (400, 1100), (190, 1120)], (244, 238, 228, 235))
-        draw.line([(210, 1080), (390, 1050)], fill=(168, 52, 46), width=5)
+        night = (18, 26, 48, 214)
+        for pane in ((748, 300, 852, 404), (868, 300, 972, 404), (748, 420, 852, 524), (868, 420, 972, 524)):
+            draw.rectangle(pane, fill=night)
+        draw.ellipse((888, 326, 936, 374), fill=(236, 222, 176, 235))
+        draw.polygon([(228, 758), (456, 744), (470, 828), (214, 844)], fill=(244, 238, 228, 242))
+        draw.polygon([(236, 828), (300, 836), (274, 1008), (210, 984)], fill=(232, 220, 204, 238))
+        draw.line([(236, 900), (286, 920)], fill=(168, 52, 46, 230), width=6)
+        draw.ellipse((348, 762, 404, 818), fill=(196, 146, 42, 245))
+        draw.ellipse((366, 780, 386, 800), fill=(92, 58, 28, 230))
     elif key == "02":
+        draw.rounded_rectangle((560, 860, 700, 1100), 18, fill=(236, 226, 210), outline=INK, width=4)
+        draw.line([(590, 900), (670, 1060)], fill=(168, 52, 46), width=8)
+        draw.line([(670, 900), (590, 1060)], fill=(168, 52, 46), width=8)
         draw.line([(430, 430), (760, 860)], fill=(168, 52, 46), width=10)
         draw.line([(740, 450), (450, 840)], fill=(168, 52, 46), width=10)
         draw.ellipse([250, 1288, 330, 1368], fill=(168, 52, 46))
@@ -544,20 +600,39 @@ def story_front(base: Image.Image, key: str) -> None:
         draw.ellipse([640, 280, 730, 360], outline=CREAM, width=8)
         draw.ellipse([500, 308, 524, 332], fill=INK)
         draw.ellipse([670, 308, 694, 332], fill=INK)
+        draw.line([(600, 360), (430, 620)], fill=(168, 52, 46), width=8)
+        draw.polygon([(400, 600), (470, 590), (430, 660)], fill=(168, 52, 46))
+        draw.ellipse([360, 640, 470, 750], fill=(176, 48, 52))
+        draw.arc([180, 980, 420, 1280], 200, 20, fill=CREAM, width=10)
+        draw.line([(250, 1120), (310, 1180)], fill=(168, 52, 46), width=6)
     elif key == "07":
         draw.ellipse([160, 220, 340, 400], fill=(232, 186, 96))
-        draw.ellipse([860, 240, 1040, 420], outline=CREAM, width=8)
+        draw.ellipse([860, 240, 1040, 420], fill=(28, 36, 64))
+        draw.ellipse([910, 290, 980, 360], fill=(236, 222, 176))
         paste_poly(base, blob(980, 520, 70, 80, 7, 18), SKIN[3] + (255,))
         draw.arc([930, 540, 1030, 600], 10, 170, fill=ROSE, width=3)
+        draw.rounded_rectangle((160, 1080, 340, 1280), 8, fill=(92, 58, 36))
+        draw.rectangle((190, 980, 310, 1120), fill=(236, 226, 204))
+        draw.line([(210, 1020), (290, 1020)], fill=INK, width=3)
+        draw.line([(210, 1060), (270, 1060)], fill=INK, width=3)
+        draw.ellipse([900, 1180, 1020, 1300], outline=CREAM, width=8)
     elif key == "08":
-        draw.ellipse([860, 180, 1040, 360], outline=CREAM, width=6)
+        draw.ellipse([860, 180, 1040, 360], fill=(28, 36, 64))
+        draw.ellipse([910, 220, 980, 290], fill=(236, 222, 176))
+        for i, y in enumerate((420, 520, 620)):
+            draw.rounded_rectangle((160, y, 420, y + 70), 16, fill=(236, 226, 210))
+        draw.line([(190, 450), (390, 660)], fill=(168, 52, 46), width=8)
+        draw.line([(390, 450), (190, 660)], fill=(168, 52, 46), width=8)
+        draw.rounded_rectangle((180, 1120, 320, 1320), 16, outline=CREAM, width=6)
+        draw.line([(210, 1160), (290, 1280)], fill=(168, 52, 46), width=6)
     elif key == "10":
         draw.rounded_rectangle([140, 260, 420, 400], 28, outline=CREAM, width=5)
         draw.rounded_rectangle([760, 240, 1060, 390], 28, outline=GOLD, width=5)
         draw.text((210, 300), "Hi", fill=CREAM)
         draw.text((860, 285), "Hi", fill=GOLD)
-        for i, x in enumerate((180, 230, 280)):
-            draw.ellipse([x, 1280 + (i % 2) * 20, x + 36, 1310 + (i % 2) * 20], outline=CREAM, width=3)
+        for i, x in enumerate((520, 600, 680, 760)):
+            draw.ellipse([x, 1360, x + 48, 1400], fill=CREAM)
+            draw.polygon([(x + 8, 1372), (x + 28, 1368), (x + 40, 1388)], fill=INK)
     elif key == "11":
         paste_poly(base, [(700, 620), (860, 560), (900, 640), (760, 720)], SKIN[4] + (255,))
         for i in range(4):
@@ -577,6 +652,12 @@ def story_front(base: Image.Image, key: str) -> None:
     elif key == "16":
         for i in range(5):
             draw.line([(180, 1180 + i * 24), (420, 1140 + i * 24)], fill=CREAM, width=5)
+    elif key == "18":
+        tiles = ((140, (36, 86, 168)), (390, (36, 128, 78)), (640, (70, 150, 196)), (890, (22, 22, 26)))
+        for x, color in tiles:
+            draw.rounded_rectangle((x, 180, x + 200, 420), 18, fill=color, outline=CREAM, width=4)
+        draw.polygon([(960, 250), (1040, 300), (960, 350)], fill=CREAM)
+        draw.ellipse((1020, 80, 1140, 200), fill=(236, 222, 176))
     elif key == "19":
         for i in range(8):
             a = math.tau * i / 8
@@ -586,17 +667,20 @@ def story_front(base: Image.Image, key: str) -> None:
         child(base, 300, 1240, 1.3, SKIN[2], CLOTH[0][0])
     elif key == "20":
         draw.polygon([(430, 1180), (760, 1140), (760, 1220), (430, 1240)], fill=(92, 58, 40))
-        draw.polygon(
-            [(820, 520), (940, 430), (1020, 470), (980, 540), (1120, 500), (1040, 640), (860, 660)],
-            fill=(232, 214, 180),
-        )
-        draw.line([(940, 450), (980, 390)], fill=GOLD, width=5)
-        draw.line([(700, 430), (860, 520)], fill=CREAM, width=4)
+        draw.ellipse([500, 1100, 560, 1160], outline=CREAM, width=6)
+        horse(base, 560, 220, 1.2)
     elif key == "21":
-        paste_poly(base, blob(900, 1140, 78, 96, 21, 22), CREAM + (255,))
-        draw.ellipse([860, 1110, 900, 1150], fill=INK)
-        draw.ellipse([930, 1110, 970, 1150], fill=INK)
-        draw.arc([870, 1170, 960, 1220], 15, 165, fill=INK, width=3)
+        paste_poly(base, blob(900, 980, 78, 96, 21, 22), CREAM + (255,))
+        draw.ellipse([860, 950, 900, 990], fill=INK)
+        draw.ellipse([930, 950, 970, 990], fill=INK)
+        draw.arc([870, 1010, 960, 1060], 15, 165, fill=INK, width=3)
+        draw.rectangle((160, 620, 280, 760), fill=(36, 28, 22))
+        draw.ellipse((188, 648, 252, 712), fill=(20, 16, 14))
+        draw.ellipse((206, 666, 234, 694), fill=GOLD)
+        draw.rectangle((210, 760, 230, 980), fill=(62, 42, 30))
+        draw.polygon([(150, 980), (290, 980), (250, 1020), (190, 1020)], fill=(62, 42, 30))
+        child(base, 1040, 1460, 0.9, SKIN[2], CLOTH[0][0])
+        draw.rounded_rectangle((900, 1240, 1040, 1360), 8, fill=(92, 58, 36))
     elif key == "22":
         draw.rounded_rectangle([720, 460, 1080, 1120], 12, fill=(62, 40, 30), outline=GOLD, width=6)
         draw.rectangle([770, 530, 1030, 900], outline=CREAM, width=4)
@@ -618,13 +702,23 @@ def story_front(base: Image.Image, key: str) -> None:
             draw.ellipse([700 + dx, 1080 + i * 8, 728 + dx, 1106 + i * 8], fill=GOLD, outline=INK)
     elif key == "25":
         draw.line([(780, 1360), (780, 980)], fill=CREAM, width=18)
-        draw.line([(780, 980), (520, 560)], fill=GOLD, width=18)
-        draw.line([(780, 980), (1080, 540)], fill=CREAM, width=18)
+        draw.line([(780, 980), (480, 520)], fill=GOLD, width=18)
+        draw.line([(780, 980), (1100, 500)], fill=CREAM, width=18)
+        draw.ellipse([430, 430, 530, 530], outline=GOLD, width=6)
+        draw.arc([450, 470, 530, 540], 200, 20, fill=GOLD, width=4)
+        draw.ellipse([1040, 430, 1140, 530], fill=CREAM)
+        draw.polygon([(1060, 500), (1100, 460), (1120, 505)], fill=INK)
     elif key == "26":
         draw.ellipse([480, 180, 740, 440], fill=(232, 186, 96))
         draw.polygon([(360, 1120), (860, 1080), (860, 1160), (360, 1180)], fill=(92, 58, 40))
     elif key == "27":
         draw.line([(560, 980), (700, 980)], fill=(168, 52, 46), width=6)
+        draw.rounded_rectangle((760, 980, 980, 1280), 22, fill=(28, 32, 40), outline=GOLD, width=6)
+        draw.ellipse((820, 1040, 920, 1140), outline=(168, 52, 46), width=8)
+        draw.ellipse((250, 280, 390, 420), outline=CREAM, width=6)
+        draw.ellipse((300, 320, 340, 360), fill=CREAM)
+        draw.rounded_rectangle((860, 260, 1040, 440), 16, fill=(28, 32, 40), outline=GOLD, width=5)
+        draw.polygon([(980, 300), (1040, 350), (920, 350)], fill=GOLD)
     elif key == "28":
         draw.rounded_rectangle([500, 1180, 700, 1320], 8, outline=CREAM, width=4)
         draw.line([(520, 1200), (680, 1300)], fill=(168, 52, 46), width=5)
@@ -634,9 +728,15 @@ def story_front(base: Image.Image, key: str) -> None:
 # cx, foot, scale, facing, build, pose, skin, hair, cloth, expr, gesture
 People = list[tuple]
 SCENES: dict[str, dict] = {
-    "end": {"people": [(760, 1480, 0.74, "left", "woman", "stand", 3, "bun", 2, "closed", "side")]},
-    "01": {"people": [(860, 1540, 1.05, "front", "man", "sit", 0, "beard", 3, "down", "think")]},
-    "02": {"people": [(900, 1520, 1.02, "left", "man", "stand", 2, "afro", 1, "worry", "reach")]},
+    "end": {"people": []},
+    "01": {"people": [
+        (700, 1340, 1.22, "left", "man", "sit", 1, "beard", 3, "down", "think"),
+        (108, 1470, 0.74, "left", "woman", "stand", 3, "long", 0, "closed", "side"),
+    ]},
+    "02": {"people": [
+        (900, 1520, 1.02, "left", "man", "stand", 2, "afro", 1, "worry", "reach"),
+        (160, 1420, 0.68, "right", "woman", "stand", 4, "braids", 0, "flat", "side"),
+    ]},
     "03": {"people": [
         (300, 1500, 0.98, "right", "man", "stand", 1, "fade", 2, "shy", "side"),
         (900, 1500, 0.98, "left", "woman", "stand", 4, "long", 0, "flat", "cross"),
@@ -651,7 +751,11 @@ SCENES: dict[str, dict] = {
     ]},
     "07": {"people": [(620, 1500, 1.0, "front", "man", "stand", 2, "braids", 3, "smile", "flower")]},
     "08": {"people": [(640, 1500, 1.02, "front", "man", "sit", 0, "fade", 1, "worry", "phone_off")]},
-    "10": {"people": [(960, 1520, 1.05, "front", "woman", "stand", 3, "wrap", 0, "worry", "belly")]},
+    "10": {"people": [
+        (280, 1280, 0.62, "right", "man", "stand", 4, "bald", 3, "flat", "side"),
+        (460, 1320, 0.58, "right", "woman", "stand", 1, "bun", 2, "flat", "side"),
+        (960, 1520, 1.05, "front", "woman", "stand", 3, "wrap", 0, "worry", "belly"),
+    ]},
     "11": {"people": [
         (420, 1520, 1.0, "front", "man", "stand", 2, "crop", 2, "shy", "side"),
         (860, 1480, 0.96, "left", "woman", "stand", 4, "braids", 5, "soft", "reach"),
@@ -665,7 +769,10 @@ SCENES: dict[str, dict] = {
     "18": {"people": [(620, 1520, 1.08, "front", "man", "sit", 0, "afro", 5, "down", "phone")]},
     "19": {"people": [(760, 1500, 1.0, "front", "man", "sit", 1, "beard", 1, "worry", "think")]},
     "20": {"people": [(460, 1460, 0.95, "front", "elder", "sit", 4, "bald", 3, "closed", "cup")]},
-    "21": {"people": [(560, 1520, 1.05, "right", "man", "stand", 2, "fade", 0, "smile", "reach")]},
+    "21": {"people": [
+        (560, 1520, 1.05, "right", "man", "stand", 2, "fade", 0, "smile", "reach"),
+        (1000, 1500, 0.78, "left", "woman", "stand", 3, "bun", 2, "worry", "side"),
+    ]},
     "22": {"people": [(420, 1520, 1.05, "right", "man", "stand", 0, "crop", 4, "flat", "bag")]},
     "23": {"people": [(420, 1500, 1.02, "right", "man", "stand", 1, "mustache", 5, "flat", "side")]},
     "24": {"people": [
@@ -693,6 +800,7 @@ KEEP = {"cover", "end", "04", "09", "12", "13", "17"}
 def compose(key: str, spec: dict) -> None:
     plate = Image.open(OLD / f"{key}.jpg").convert("RGB").resize((W, H), Image.Resampling.LANCZOS)
     base = plate.convert("RGBA")
+    story_back(base, key)
     for index, person in enumerate(spec["people"]):
         cx, foot, scale, facing, build, pose, skin_i, hair, cloth_i, expr, gesture = person
         layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))

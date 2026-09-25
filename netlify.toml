@@ -1,0 +1,8 @@
+[build]
+  command = "npm run build"
+
+[[headers]]
+  for = "/pdf/*"
+  [headers.values]
+    Content-Type = "application/pdf"
+    Cache-Control = "public, max-age=0, must-revalidate"

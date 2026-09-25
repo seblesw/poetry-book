@@ -286,6 +286,12 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
   font-size: 1.05rem;
   line-height: 1.7;
 }
+.cv-date {
+  margin: 2px 0 0;
+  color: var(--muted);
+  font-size: 1.02rem;
+  letter-spacing: 0.03em;
+}
 .bk-brand { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
 .bk-credit {
   margin: 0;

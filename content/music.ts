@@ -10,20 +10,20 @@ export const tracks: Track[] = [
   {
     id: "tizita",
     title: "ትዝታ",
-    composer: "ክራር",
-    src: "/audio/tizita.mp3",
+    composer: "ክላሲካል",
+    src: "/audio/tizita.mp3?v=3",
   },
   {
     id: "bati",
     title: "ባቲ",
-    composer: "መሰንቆ",
-    src: "/audio/bati.mp3",
+    composer: "ክላሲካል",
+    src: "/audio/bati.mp3?v=3",
   },
   {
     id: "ambassel",
     title: "አምባሰል",
-    composer: "ዋሽንት",
-    src: "/audio/ambassel.mp3",
+    composer: "ክላሲካል",
+    src: "/audio/ambassel.mp3?v=3",
   },
 ];
 

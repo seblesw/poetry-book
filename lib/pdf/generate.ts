@@ -24,11 +24,11 @@ const DARK = rgb(26 / 255, 14 / 255, 10 / 255);
 const GOLD = rgb(196 / 255, 165 / 255, 116 / 255);
 const MUTED = rgb(107 / 255, 83 / 255, 70 / 255);
 
-const BODY = 11.25;
-const LEAD = 17;
-const BLANK = 10;
-const TITLE = 20;
-const TITLE_LEAD = 26;
+const BODY = 18;
+const LEAD = 34;
+const BLANK = 16;
+const TITLE = 32;
+const TITLE_LEAD = 40;
 const TEXT_X = HALF + 40;
 const TEXT_W = HALF - 80;
 
@@ -199,10 +199,12 @@ function drawRuns(
   size: number,
   color: ReturnType<typeof rgb>,
   fonts: Fonts,
+  bold = false,
 ) {
   let cursor = x;
   for (const run of runsOf(text, fonts)) {
     page.drawText(run.text, { x: cursor, y, size, font: run.font, color });
+    if (bold) page.drawText(run.text, { x: cursor + 0.32, y, size, font: run.font, color });
     cursor += run.font.widthOfTextAtSize(run.text, size);
   }
 }
@@ -263,7 +265,7 @@ function chunkPoem(poem: Poem, fonts: Fonts): string[][] {
       flat.push("");
       continue;
     }
-    flat.push(...wrap(raw, fonts, BODY, TEXT_W));
+    flat.push(...wrapWords(raw, fonts, BODY, TEXT_W));
   }
 
   const pages: string[][] = [];
@@ -290,7 +292,7 @@ function chunkPoem(poem: Poem, fonts: Fonts): string[][] {
 }
 
 function headerHeight(title: string, fonts: Fonts) {
-  return wrap(title, fonts, TITLE, TEXT_W).length * TITLE_LEAD + 26;
+  return wrapWords(title, fonts, TITLE, TEXT_W).length * TITLE_LEAD + 26;
 }
 
 function paintImage(page: PDFPage, image: PDFImage | null, box: { x: number; y: number; w: number; h: number }, fallback: string, fonts: Fonts, ink: Ink) {
@@ -339,6 +341,7 @@ function drawCover(page: PDFPage, image: PDFImage | null, fonts: Fonts, ink: Ink
     drawRuns(page, line, x, creditY, 12, ink.ink, fonts);
     creditY -= 18;
   }
+  drawRuns(page, book.date, x, creditY - 6, 12, ink.muted, fonts);
   drawRuns(page, "ዲጂታል የግጥም መጽሐፍ", x, 88, 11, GOLD, fonts);
 }
 
@@ -389,8 +392,8 @@ function drawPoemSpread(
 
   let y = PAGE_H - 50;
   if (first) {
-    for (const line of wrap(poem.title, fonts, TITLE, TEXT_W)) {
-      drawRuns(page, line, TEXT_X, y, TITLE, ink.ink, fonts);
+    for (const line of wrapWords(poem.title, fonts, TITLE, TEXT_W)) {
+      drawRuns(page, line, TEXT_X, y, TITLE, ink.ink, fonts, true);
       y -= TITLE_LEAD;
     }
     y -= 6;
@@ -407,7 +410,7 @@ function drawPoemSpread(
       y -= BLANK;
       continue;
     }
-    drawRuns(page, line, TEXT_X, y, BODY, ink.ink, fonts);
+    drawRuns(page, line, TEXT_X, y, BODY, ink.ink, fonts, true);
     y -= LEAD;
   }
 
@@ -422,14 +425,10 @@ function drawEnd(page: PDFPage, image: PDFImage | null, fonts: Fonts, pageNo: nu
   maskSpread(page, ink);
   const note = book.endNote;
   let y = 520;
-  drawRuns(page, note.title, TEXT_X, y, 28, ink.ink, fonts);
-  y -= 34;
-  drawRuns(page, note.subtitle, TEXT_X, y, 16, ink.ink, fonts);
-  y -= 16;
+  drawRuns(page, note.heading, TEXT_X, y, 28, ink.ink, fonts);
+  y -= 20;
   page.drawRectangle({ x: TEXT_X, y, width: 64, height: 1.15, color: GOLD });
   y -= 28;
-  drawRuns(page, note.heading, TEXT_X, y, 16, ink.ink, fonts);
-  y -= 26;
   for (const paragraph of note.paragraphs) {
     for (const line of wrapWords(paragraph, fonts, 12, TEXT_W)) {
       drawRuns(page, line, TEXT_X, y, 12, ink.ink, fonts);

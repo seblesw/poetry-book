@@ -55,16 +55,21 @@ export function DownloadPdf({
   );
 }
 
+export function poetryPdfPath(tone: PdfTone) {
+  const fileName = book.pdfFileName.replace(/\.pdf$/i, tone === "dark" ? "-dark.pdf" : "-light.pdf");
+  return { href: `/pdf/${fileName}`, fileName };
+}
+
 export async function downloadPoetryPdf(tone: PdfTone): Promise<void> {
-  const response = await fetch(`/api/poetry/pdf?theme=${tone}`);
+  const { href, fileName } = poetryPdfPath(tone);
+  const response = await fetch(href);
   if (!response.ok) throw new Error("pdf");
   const blob = await response.blob();
-  const href = URL.createObjectURL(blob);
   const link = document.createElement("a");
-  link.href = href;
-  link.download = book.pdfFileName.replace(/\.pdf$/i, tone === "dark" ? "-dark.pdf" : "-light.pdf");
+  link.href = URL.createObjectURL(blob);
+  link.download = fileName;
   document.body.appendChild(link);
   link.click();
   link.remove();
-  URL.revokeObjectURL(href);
+  URL.revokeObjectURL(link.href);
 }

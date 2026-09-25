@@ -14,8 +14,8 @@ export async function generateMetadata({ params }: { params: Promise<Params> }):
   const { slug } = await params;
   if (slug === END_SLUG) {
     return {
-      title: "መጨረሻ",
-      description: `${book.endNote.subtitle} — ${book.endNote.heading}`,
+      title: book.endNote.heading,
+      description: book.endNote.paragraphs[0],
       alternates: { canonical: "/poetry/end" },
     };
   }

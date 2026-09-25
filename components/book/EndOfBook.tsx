@@ -10,14 +10,12 @@ export function EndOfBook() {
     <div className="bk-book">
       <StoryImage src={book.endImage} alt={book.endAlt} priority />
       <div className="bk-spine" aria-hidden="true" />
-      <section className="bk-page bk-end" aria-labelledby="end-title">
+      <section className="bk-page bk-end" aria-labelledby="end-heading">
         <div className="bk-page-head">
-          <h2 id="end-title" tabIndex={-1}>
-            {note.title}
+          <h2 id="end-heading" tabIndex={-1}>
+            {note.heading}
           </h2>
-          <p className="bk-end-sub">{note.subtitle}</p>
           <hr className="bk-rule" />
-          <h3>{note.heading}</h3>
         </div>
         <div className="bk-poem-scroll">
           {note.paragraphs.map((paragraph) => (
