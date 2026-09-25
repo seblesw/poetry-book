@@ -117,7 +117,7 @@ def main() -> None:
 
     payload = {
         "source": "የግጥም መድብል#1.docx",
-        "title": "አጫጭር ግጥሞች",
+        "title": "አጫጭር የፍቅር ግጥሞች",
         "series": "የግጥም መድብል",
         "poems": poems,
     }

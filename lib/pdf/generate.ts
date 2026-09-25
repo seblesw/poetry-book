@@ -310,7 +310,7 @@ function drawCover(page: PDFPage, image: PDFImage | null, fonts: Fonts, ink: Ink
     drawRuns(page, line, x, y, 36, ink.ink, fonts);
     y -= 46;
   }
-  drawRuns(page, "ሃያ ስምንት አጫጭር ግጥሞች", x, y - 8, 13, ink.muted, fonts);
+  drawRuns(page, "ሃያ ስምንት አጫጭር የፍቅር ግጥሞች", x, y - 8, 13, ink.muted, fonts);
   page.drawRectangle({ x, y: 176, width: 64, height: 1.25, color: GOLD });
   let creditY = 150;
   for (const line of wrap(book.credit, fonts, 12, HALF - 96)) {

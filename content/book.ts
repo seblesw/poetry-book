@@ -1,5 +1,5 @@
 export const book = {
-  title: "አጫጭር ግጥሞች",
+  title: "አጫጭር የፍቅር ግጥሞች",
   series: "የግጥም መድብል",
   issue: "፩",
   language: "am" as const,
@@ -7,13 +7,15 @@ export const book = {
   credit: "በ ገጣሚ ኪዳነ ማርያም ዘውዱ የተዘጋጀ",
   description: "ሃያ ስምንት አጫጭር የአማርኛ ግጥሞች። በ ገጣሚ ኪዳነ ማርያም ዘውዱ የተዘጋጀ።",
   keywords: [
-    "አጫጭር ግጥሞች",
+    "አጫጭር  የፍቅር ግጥሞች",
     "የግጥም መድብል",
     "የአማርኛ ግጥም",
     "Amharic poetry",
     "digital poetry book",
   ],
   pdfFileName: "Achachir-Gitmoch-Digital-Poetry-Book.pdf",
+  thumbnail: "/thumbnail.jpg",
+  thumbnailAlt: "አጫጭር የፍቅር ግጥሞች። የግጥም መድብል። በ ገጣሚ ኪዳነ ማርያም ዘውዱ የተዘጋጀ።",
   coverImage: "/plates/cover.jpg",
   coverAlt: "በቡናማ መስክ ላይ ነጭ ክፍት ቅርጽና የወርቅ ነጥብ ያለው የመጽሐፍ ምልክት።",
   endImage: "/plates/end.jpg",

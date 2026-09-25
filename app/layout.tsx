@@ -31,13 +31,13 @@ export const metadata: Metadata = {
     description: book.description,
     locale: "am_ET",
     type: "website",
-    images: [{ url: book.coverImage, alt: book.coverAlt }],
+    images: [{ url: book.thumbnail, width: 1200, height: 630, alt: book.thumbnailAlt }],
   },
   twitter: {
     card: "summary_large_image",
     title: book.title,
     description: book.description,
-    images: [book.coverImage],
+    images: [book.thumbnail],
   },
 };
 
