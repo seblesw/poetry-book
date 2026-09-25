@@ -28,7 +28,7 @@ export const book = {
   
       "በመጨረሻም የተለያዩ የግጥም ጽሁፎቼን በማንበብ ሀሳብ አስተያየት ለሰጣችሁኝ ሁሉ ከልብ አመሰግናለሁ።",
     ],
-    sign: ["ኪዳነማርያም ዘውዱ|kidanyee@gmail.com", "መስከረም 1", "አዲስ አበባ ኢትዮጵያ"],
+    sign: ["ኪዳነማርያም ዘውዱ|kidanyee@gmail.com", "መስከረም 1 2019 ዓ.ም", "አዲስ አበባ ኢትዮጵያ"],
   },
   /** Default reading music. The player can switch among the classical set. */
   ambient: "/audio/tizita.mp3",
