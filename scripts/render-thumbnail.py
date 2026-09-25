@@ -95,7 +95,7 @@ def thumbnail() -> None:
     text(draw, "ግጥሞች", (748, 268), 92, INK)
     draw.line([(748, 400), (860, 400)], fill=GOLD, width=3)
     text(draw, "ሃያ ስምንት ማራኪ የፍቅር ግጥሞች", (748, 428), 28, (109, 83, 70))
-    text(draw, "በ ገጣሚ ኪዳነ ማርያም ዘውዱ የተዘጋጀ", (748, 520), 24, INK)
+    text(draw, "በኪዳነ ማርያም ዘውዱ የተዘጋጀ", (748, 520), 24, INK)
     draw.rectangle([18, 18, w - 19, h - 19], outline=(247, 241, 232, ), width=2)
     grain = Image.effect_noise((w, h), 10).convert("L")
     img = Image.blend(img, Image.merge("RGB", (grain, grain, grain)), 0.05)
