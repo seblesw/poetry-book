@@ -315,13 +315,7 @@ export function PoetryBook({ slug }: { slug: string }) {
         </button>
         <div ref={swipeRef} className={`bk-spread is-${direction}`} key={slug}>
         {ended ? (
-          <EndOfBook
-            onReadAgain={() => go("1", "next")}
-            onContents={() => setTocOpen(true)}
-            onShare={() => void onShare()}
-            pdfStatus={pdfStatus}
-            onDownload={(tone) => void onDownload(tone)}
-          />
+          <EndOfBook />
         ) : poem ? (
           <BookSpread poem={poem} priority />
         ) : null}

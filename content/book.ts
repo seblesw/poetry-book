@@ -20,6 +20,17 @@ export const book = {
   coverAlt: "በቡናማ መስክ ላይ ነጭ ክፍት ቅርጽና የወርቅ ነጥብ ያለው የመጽሐፍ ምልክት።",
   endImage: "/plates/end.jpg",
   endAlt: "መጽሐፉን ይዞ በጸጥታ የቆመ ሰው።",
+  endNote: {
+    // title: "መጨረሻ",
+    subtitle: "ማራኪ የፍቅር ግጥሞች",
+    heading: "ምስጋና",
+    paragraphs: [
+      "በቅድሚያ ለሁሉም ባለቤት ለልዑል እግዚአብሔር ክብር እና ምስጋና አምልኮት እና ውዳሴ ዛሬም ዘወትርም እስከ ዘለዓለም ድረስ ይሁን አሜን።",
+      // "በመቀጠል ለዚህ መጽሀፍ ዝግጅት እና ግምገማ በማድረግ ላገዘችኝ ለሰብለ ሰፊነህ።",
+      "በመጨረሻም የተለያዩ የግጥም ጽሁፎቼን በማንበብ ሀሳብ አስተያየት ለሰጣችሁኝ ሁሉ ከልብ አመሰግናለሁ።",
+    ],
+    sign: ["ኪዳነማርያም ዘውዱ|kidanyee@gmail.com", "መስከረም 1 2019 ዓም", "አዲስ አበባ ኢትዮጵያ"],
+  },
   /** Default reading music. The player can switch among the classical set. */
   ambient: "/audio/tizita.mp3",
 };

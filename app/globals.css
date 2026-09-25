@@ -252,24 +252,33 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
   font-size: 0.85rem;
 }
 
-.bk-end {
-  padding: 12px 0 8px;
-}
 .bk-end h2 {
   margin: 0;
-  font-size: clamp(2.2rem, 6vw, 3.4rem);
-  font-weight: 400;
+  font-size: clamp(2.2rem, 6vw, 3.2rem);
+  font-weight: 700;
+  line-height: 1.25;
 }
-.bk-end p { color: var(--muted); font-size: 1.15rem; }
-.bk-end-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
-.bk-end-actions a, .bk-end-actions button {
-  text-decoration: none;
-  border: 1px solid var(--line);
-  background: transparent;
+.bk-end-sub {
+  margin: 8px 0 0;
   color: var(--ink);
-  padding: 12px 14px;
-  font-size: 1rem;
+  font-size: clamp(1.35rem, 3vw, 1.7rem);
+  font-weight: 700;
+  line-height: 1.45;
 }
+.bk-end h3 {
+  margin: 0 0 8px;
+  font-size: 1.35rem;
+  font-weight: 700;
+}
+.bk-end p {
+  margin: 0 0 1em;
+  color: var(--ink);
+  font-size: clamp(1.08rem, 2.4vw, 1.24rem);
+  font-weight: 700;
+  line-height: 1.85;
+}
+.bk-end-sign { margin-top: 0.6em; }
+.bk-end-sign p { margin: 0 0 0.2em; }
 
 .cv-credit {
   margin: -6px 0 0;

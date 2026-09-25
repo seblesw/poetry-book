@@ -225,6 +225,28 @@ function wrap(text: string, fonts: Fonts, size: number, max: number): string[] {
   return lines.length ? lines : [""];
 }
 
+function wrapWords(text: string, fonts: Fonts, size: number, max: number): string[] {
+  const lines: string[] = [];
+  let buf = "";
+  for (const word of text.split(/\s+/u).filter(Boolean)) {
+    const next = buf ? `${buf} ${word}` : word;
+    if (widthOf(next, fonts, size) <= max) {
+      buf = next;
+      continue;
+    }
+    if (buf) lines.push(buf);
+    if (widthOf(word, fonts, size) > max) {
+      const parts = wrap(word, fonts, size, max);
+      lines.push(...parts.slice(0, -1));
+      buf = parts.at(-1) ?? "";
+    } else {
+      buf = word;
+    }
+  }
+  if (buf) lines.push(buf);
+  return lines.length ? lines : [""];
+}
+
 function fit(text: string, fonts: Fonts, size: number, max: number) {
   if (widthOf(text, fonts, size) <= max) return text;
   let value = text;
@@ -398,11 +420,28 @@ function drawEnd(page: PDFPage, image: PDFImage | null, fonts: Fonts, pageNo: nu
   page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: ink.paper });
   paintImage(page, image, { x: 0, y: 0, w: HALF, h: PAGE_H }, "", fonts, ink);
   maskSpread(page, ink);
-  drawRuns(page, "መጨረሻ", TEXT_X, 360, 32, ink.ink, fonts);
-  page.drawRectangle({ x: TEXT_X, y: 336, width: 64, height: 1.15, color: GOLD });
-  drawRuns(page, book.title, TEXT_X, 300, 16, ink.ink, fonts);
-  drawRuns(page, book.series, TEXT_X, 274, 12, ink.muted, fonts);
-  drawRuns(page, "ሃያ ስምንት ግጥሞች", TEXT_X, 248, 12, ink.muted, fonts);
+  const note = book.endNote;
+  let y = 520;
+  drawRuns(page, note.title, TEXT_X, y, 28, ink.ink, fonts);
+  y -= 34;
+  drawRuns(page, note.subtitle, TEXT_X, y, 16, ink.ink, fonts);
+  y -= 16;
+  page.drawRectangle({ x: TEXT_X, y, width: 64, height: 1.15, color: GOLD });
+  y -= 28;
+  drawRuns(page, note.heading, TEXT_X, y, 16, ink.ink, fonts);
+  y -= 26;
+  for (const paragraph of note.paragraphs) {
+    for (const line of wrapWords(paragraph, fonts, 12, TEXT_W)) {
+      drawRuns(page, line, TEXT_X, y, 12, ink.ink, fonts);
+      y -= 18;
+    }
+    y -= 8;
+  }
+  y -= 6;
+  for (const line of note.sign) {
+    drawRuns(page, line, TEXT_X, y, 12, ink.ink, fonts);
+    y -= 18;
+  }
   footer(page, fonts, pageNo, "spread", ink);
 }
 
