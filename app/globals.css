@@ -76,10 +76,12 @@ a { color: inherit; }
 }
 .cv-art {
   position: relative;
-  min-height: 320px;
+  width: 100%;
+  aspect-ratio: 3 / 4;
+  min-height: 0;
   background: var(--room-deep);
 }
-.cv-art img { object-fit: cover; }
+.cv-art img { object-fit: contain; object-position: center; }
 .cv-copy {
   display: flex;
   flex-direction: column;
@@ -184,11 +186,14 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 .bk-story {
   position: relative;
   flex: none;
-  height: min(30vh, 220px);
+  width: 100%;
+  height: auto;
+  aspect-ratio: 3 / 4;
+  max-height: min(42dvh, 72vw, 520px);
   background: var(--room-deep);
   overflow: hidden;
 }
-.bk-story img { object-fit: cover; }
+.bk-story img { object-fit: contain; object-position: center; }
 .bk-spine { display: none; }
 .bk-image-fallback {
   position: absolute;
@@ -216,7 +221,7 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 .bk-page-head { flex: none; }
 .bk-poem-scroll {
   flex: 1;
-  min-height: 0;
+  min-height: 96px;
   overflow: auto;
   scrollbar-color: var(--gold) transparent;
 }
@@ -522,7 +527,7 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 
 @media (min-width: 960px) {
   .cv-jacket { grid-template-columns: 1fr 1fr; }
-  .cv-art { min-height: 100%; }
+  .cv-art { aspect-ratio: auto; height: 100%; min-height: 100%; }
   .cv-copy { padding: 56px 52px; }
   .bk-stage { padding: 12px 28px 0; }
   .bk-book {
@@ -532,7 +537,13 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
     grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
   }
-  .bk-story { height: 100%; max-height: none; align-self: stretch; margin: 0; }
+  .bk-story {
+    height: 100%;
+    max-height: none;
+    aspect-ratio: auto;
+    align-self: stretch;
+    margin: 0;
+  }
   .bk-spine {
     display: block;
     background: linear-gradient(

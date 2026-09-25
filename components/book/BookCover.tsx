@@ -14,7 +14,7 @@ export function BookCover() {
     <main className="cv">
       <article className="cv-jacket">
         <div className="cv-art">
-          <Image src={book.coverImage} alt={book.coverAlt} fill priority sizes="(max-width: 959px) 100vw, 50vw" />
+          <Image src={book.coverImage} alt={book.coverAlt} fill priority sizes="(max-width: 959px) 100vw, 50vw" style={{ objectFit: "contain", objectPosition: "center" }} />
         </div>
         <div className="cv-copy">
           <p className="cv-series">

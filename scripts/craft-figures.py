@@ -145,20 +145,16 @@ def hair_back(base: Image.Image, cx: float, hy: float, s: float, kind: str, colo
 def hair_front(base: Image.Image, cx: float, hy: float, s: float, kind: str, color, seed: int, facing: str) -> None:
     draw = ImageDraw.Draw(base)
     if kind == "wrap":
-        paste_poly(base, blob(cx, hy - 48 * s, 128 * s, 78 * s, seed, 24), (236, 226, 210, 255))
-        drape_x = cx + (70 * s if facing != "right" else -70 * s)
-        paste_poly(
-            base,
-            [
-                (cx - 90 * s, hy - 20 * s),
-                (cx + 90 * s, hy - 28 * s),
-                (drape_x, hy + 120 * s),
-                (drape_x - 36 * s, hy + 110 * s),
-            ],
-            (236, 226, 210, 255),
-        )
-        draw.line([(cx - 80 * s, hy - 8 * s), (cx + 80 * s, hy - 16 * s)], fill=GOLD + (230,), width=6)
-        draw.line([(cx - 80 * s, hy + 2 * s), (cx + 78 * s, hy - 4 * s)], fill=(168, 52, 46, 220), width=3)
+        paste_poly(base, blob(cx, hy - 72 * s, 108 * s, 46 * s, seed, 22), (236, 226, 210, 255))
+        draw.line([(cx - 70 * s, hy - 78 * s), (cx + 70 * s, hy - 84 * s)], fill=GOLD + (230,), width=5)
+        draw.line([(cx - 68 * s, hy - 66 * s), (cx + 68 * s, hy - 72 * s)], fill=(168, 52, 46, 220), width=3)
+        if facing != "front":
+            drape_x = cx + (78 * s if facing == "left" else -78 * s)
+            paste_poly(
+                base,
+                [(cx, hy - 60 * s), (cx + (20 * s if facing == "left" else -20 * s), hy - 50 * s), (drape_x, hy + 90 * s), (drape_x - 28 * s, hy + 80 * s)],
+                (236, 226, 210, 255),
+            )
 
 
 def features(draw: ImageDraw.ImageDraw, cx: float, hy: float, s: float, expr: str, look: float) -> None:
@@ -212,356 +208,505 @@ def profile_head(base: Image.Image, cx: float, hy: float, s: float, skin, facing
     draw.line([(lip_x, hy + 28 * s), (lip_x - sign * 12 * s, hy + 34 * s)], fill=ROSE, width=3)
 
 
-def paint_prop(draw: ImageDraw.ImageDraw, kind: str, x: float, y: float, s: float) -> None:
-    if kind == "phone":
-        draw.rounded_rectangle([x - 13 * s, y - 24 * s, x + 13 * s, y + 24 * s], 4, fill=(28, 22, 18), outline=GOLD, width=2)
-        draw.rectangle([x - 8 * s, y - 16 * s, x + 8 * s, y + 10 * s], fill=(232, 196, 140))
+def solid(base: Image.Image, points: list[tuple[float, float]], fill) -> None:
+    paste_poly(base, points, fill + (255,))
+    ImageDraw.Draw(base).line(points + [points[0]], fill=INK + (210,), width=2)
+
+
+def hem(draw: ImageDraw.ImageDraw, left: float, right: float, y: float, bands) -> None:
+    for band in bands:
+        draw.line([(left, y), (right, y)], fill=band + (230,), width=7)
+        y -= 11
+
+
+def front_head(base: Image.Image, cx: float, hy: float, s: float, skin, build: str) -> None:
+    if build == "woman":
+        pts = [
+            (cx - 62 * s, hy - 10 * s), (cx - 48 * s, hy - 78 * s), (cx, hy - 96 * s),
+            (cx + 50 * s, hy - 76 * s), (cx + 64 * s, hy - 8 * s), (cx + 36 * s, hy + 62 * s),
+            (cx, hy + 84 * s), (cx - 34 * s, hy + 64 * s),
+        ]
+    elif build == "elder":
+        pts = [
+            (cx - 70 * s, hy), (cx - 58 * s, hy - 70 * s), (cx, hy - 86 * s),
+            (cx + 60 * s, hy - 68 * s), (cx + 72 * s, hy + 4 * s), (cx + 46 * s, hy + 78 * s),
+            (cx, hy + 96 * s), (cx - 44 * s, hy + 76 * s),
+        ]
+    else:
+        pts = [
+            (cx - 72 * s, hy - 4 * s), (cx - 64 * s, hy - 72 * s), (cx, hy - 88 * s),
+            (cx + 66 * s, hy - 70 * s), (cx + 76 * s, hy), (cx + 58 * s, hy + 70 * s),
+            (cx + 16 * s, hy + 92 * s), (cx - 18 * s, hy + 90 * s), (cx - 54 * s, hy + 68 * s),
+        ]
+    paste_poly(base, pts, skin + (255,))
+
+
+def beard(base: Image.Image, cx: float, hy: float, s: float) -> None:
+    paste_poly(
+        base,
+        [(cx - 26 * s, hy + 70 * s), (cx + 30 * s, hy + 72 * s), (cx + 14 * s, hy + 108 * s), (cx, hy + 116 * s), (cx - 12 * s, hy + 104 * s)],
+        (42, 28, 20, 255),
+    )
+
+
+def hand(base: Image.Image, x: float, y: float, s: float, skin) -> None:
+    paste_poly(base, blob(x, y, 16 * s, 13 * s, int(x + y) % 90, 12), skin + (255,))
+
+
+def shoe(base: Image.Image, x: float, y: float, s: float, sign: float = 1) -> None:
+    paste_poly(base, [(x - 16 * s, y - 8 * s), (x + 22 * s * sign, y - 10 * s), (x + 28 * s * sign, y + 8 * s), (x - 14 * s, y + 8 * s)], (32, 24, 20, 255))
+
+
+def arms(base: Image.Image, cx: float, shoulder: float, hip: float, hy: float, s: float, skin, gesture: str, near: float) -> tuple[float, float]:
+    left = (cx - 72 * s, shoulder + 16 * s)
+    right = (cx + 74 * s, shoulder + 12 * s)
+    hold = (cx + near * 20 * s, shoulder + 90 * s)
+    if gesture == "think":
+        limb(base, right, (cx + 40 * s, hy + 36 * s), 11 * s, skin + (255,))
+        hand(base, cx + 46 * s, hy + 30 * s, s, skin)
+        limb(base, left, (cx - 96 * s, hip + 20 * s), 11 * s, skin + (255,))
+        hand(base, cx - 96 * s, hip + 28 * s, s, skin)
+        hold = (cx + 46 * s, hy + 30 * s)
+    elif gesture == "reach":
+        hold = (cx + near * 168 * s, shoulder + 10 * s)
+        limb(base, right if near > 0 else left, hold, 12 * s, skin + (255,))
+        hand(base, hold[0], hold[1], s, skin)
+        other = left if near > 0 else right
+        limb(base, other, (other[0] - near * 20 * s, hip + 36 * s), 11 * s, skin + (255,))
+    elif gesture == "belly":
+        hold = (cx, shoulder + 168 * s)
+        limb(base, left, (cx - 22 * s, shoulder + 160 * s), 12 * s, skin + (255,))
+        limb(base, right, (cx + 28 * s, shoulder + 156 * s), 12 * s, skin + (255,))
+        hand(base, cx - 18 * s, shoulder + 164 * s, s, skin)
+        hand(base, cx + 24 * s, shoulder + 160 * s, s, skin)
+    elif gesture == "phone":
+        hold = (cx + 8 * s, shoulder + 86 * s)
+        limb(base, left, (cx - 16 * s, shoulder + 92 * s), 11 * s, skin + (255,))
+        limb(base, right, (cx + 28 * s, shoulder + 88 * s), 11 * s, skin + (255,))
+        hand(base, cx - 8 * s, shoulder + 96 * s, s, skin)
+        hand(base, cx + 24 * s, shoulder + 92 * s, s, skin)
+    elif gesture == "bag":
+        hold = (cx + near * 78 * s, hip + 70 * s)
+        limb(base, right if near > 0 else left, hold, 12 * s, skin + (255,))
+        hand(base, hold[0], hold[1], s, skin)
+    elif gesture == "open":
+        for origin, end in ((left, (cx - 130 * s, shoulder + 70 * s)), (right, (cx + 132 * s, shoulder + 64 * s))):
+            limb(base, origin, end, 11 * s, skin + (255,))
+            hand(base, end[0], end[1], s * 1.15, skin)
+        hold = (cx + 132 * s, shoulder + 64 * s)
+    elif gesture == "cross":
+        limb(base, left, (cx + 48 * s, shoulder + 70 * s), 12 * s, skin + (255,))
+        limb(base, right, (cx - 48 * s, shoulder + 88 * s), 12 * s, skin + (255,))
+        hold = (cx, shoulder + 78 * s)
+    elif gesture == "run":
+        hold = (cx + near * 150 * s, shoulder - 10 * s)
+        limb(base, right if near > 0 else left, (cx + near * 90 * s, shoulder + 40 * s), 12 * s, skin + (255,))
+        limb(base, (cx + near * 90 * s, shoulder + 40 * s), hold, 11 * s, skin + (255,))
+        back = (cx - near * 120 * s, shoulder + 80 * s)
+        limb(base, left if near > 0 else right, back, 11 * s, skin + (255,))
+        hand(base, hold[0], hold[1], s, skin)
+    elif gesture == "pocket":
+        hold = (cx + near * 36 * s, hip + 10 * s)
+        limb(base, right if near > 0 else left, hold, 12 * s, skin + (255,))
+        hand(base, hold[0], hold[1], s, skin)
+        other = left if near > 0 else right
+        limb(base, other, (other[0], hip + 40 * s), 11 * s, skin + (255,))
+    else:
+        limb(base, left, (cx - 98 * s, hip + 46 * s), 11 * s, skin + (255,))
+        limb(base, right, (cx + 102 * s, hip + 40 * s), 11 * s, skin + (255,))
+        hand(base, cx - 98 * s, hip + 54 * s, s, skin)
+        hand(base, cx + 102 * s, hip + 48 * s, s, skin)
+        hold = (cx + 102 * s, hip + 48 * s)
+    return hold
+
+
+def prop_at(base: Image.Image, kind: str, x: float, y: float, s: float) -> None:
+    draw = ImageDraw.Draw(base)
+    if kind in {"phone", "phone_off"}:
+        draw.rounded_rectangle([x - 28 * s, y - 48 * s, x + 28 * s, y + 48 * s], 6, fill=(24, 18, 16), outline=GOLD, width=3)
+        draw.rectangle([x - 20 * s, y - 34 * s, x + 20 * s, y + 24 * s], fill=(236, 214, 180))
+        if kind == "phone_off":
+            draw.line([(x - 16 * s, y - 8 * s), (x + 16 * s, y + 16 * s)], fill=(168, 52, 46), width=3)
+    elif kind == "bag":
+        draw.rounded_rectangle([x - 36 * s, y - 10 * s, x + 36 * s, y + 70 * s], 6, fill=(62, 42, 30), outline=GOLD, width=3)
+        draw.arc([x - 22 * s, y - 36 * s, x + 22 * s, y + 8 * s], 200, 340, fill=GOLD, width=4)
     elif kind == "flower":
         for i in range(6):
             a = math.tau * i / 6
-            draw.ellipse(
-                [x + math.cos(a) * 12 * s - 7 * s, y + math.sin(a) * 12 * s - 7 * s, x + math.cos(a) * 12 * s + 7 * s, y + math.sin(a) * 12 * s + 7 * s],
-                fill=(176, 64, 58),
-            )
-        draw.ellipse([x - 5 * s, y - 5 * s, x + 5 * s, y + 5 * s], fill=GOLD)
-        draw.line([(x, y + 6 * s), (x - 4 * s, y + 54 * s)], fill=(46, 90, 52), width=3)
-    elif kind == "mask":
-        draw.polygon(blob(x, y, 36 * s, 46 * s, 21, 26), fill=CREAM)
-        draw.ellipse([x - 16 * s, y - 10 * s, x - 4 * s, y + 4 * s], fill=INK)
-        draw.ellipse([x + 6 * s, y - 10 * s, x + 18 * s, y + 4 * s], fill=INK)
-        draw.arc([x - 12 * s, y + 8 * s, x + 14 * s, y + 24 * s], 20, 160, fill=INK, width=2)
-    elif kind == "coin":
-        for i, dx in enumerate((-10, 4, 16)):
-            draw.ellipse([x + dx * s - 7 * s, y + i * 3 * s, x + dx * s + 7 * s, y + i * 3 * s + 14 * s], fill=GOLD, outline=INK)
-    elif kind == "book":
-        draw.polygon([(x - 26 * s, y - 6 * s), (x + 2 * s, y - 16 * s), (x + 30 * s, y - 2 * s), (x + 2 * s, y + 14 * s)], fill=CREAM, outline=INK)
-        draw.line([(x + 2 * s, y - 14 * s), (x + 2 * s, y + 12 * s)], fill=GOLD, width=2)
+            draw.ellipse([x + math.cos(a) * 16 * s - 9 * s, y + math.sin(a) * 16 * s - 9 * s, x + math.cos(a) * 16 * s + 9 * s, y + math.sin(a) * 16 * s + 9 * s], fill=(176, 64, 58))
+        draw.ellipse([x - 7 * s, y - 7 * s, x + 7 * s, y + 7 * s], fill=GOLD)
+        draw.line([(x, y + 8 * s), (x, y + 70 * s)], fill=(46, 90, 52), width=3)
     elif kind == "cup":
-        draw.pieslice([x - 14 * s, y - 6 * s, x + 14 * s, y + 18 * s], 0, 180, fill=(92, 58, 40))
-        draw.arc([x - 16 * s, y - 12 * s, x + 16 * s, y + 16 * s], 200, 340, fill=CREAM, width=3)
-        draw.arc([x + 10 * s, y - 2 * s, x + 26 * s, y + 16 * s], 280, 80, fill=CREAM, width=3)
-    elif kind == "jebena":
-        draw.polygon([(x, y - 34 * s), (x + 18 * s, y + 16 * s), (x - 10 * s, y + 16 * s)], fill=(92, 42, 32))
-        draw.ellipse([x - 16 * s, y + 6 * s, x + 24 * s, y + 32 * s], fill=(72, 32, 26))
-        draw.line([(x + 2 * s, y - 8 * s), (x + 28 * s, y - 24 * s)], fill=(72, 32, 26), width=4)
-        draw.ellipse([x + 22 * s, y - 30 * s, x + 34 * s, y - 18 * s], outline=(72, 32, 26), width=3)
-    elif kind == "bag":
-        draw.rounded_rectangle([x - 20 * s, y - 14 * s, x + 20 * s, y + 26 * s], 3, fill=(62, 44, 32), outline=GOLD, width=2)
-        draw.arc([x - 14 * s, y - 26 * s, x + 14 * s, y - 2 * s], 200, 340, fill=GOLD, width=3)
-    elif kind == "bulb":
-        draw.ellipse([x - 14 * s, y - 20 * s, x + 14 * s, y + 8 * s], fill=(244, 214, 150), outline=GOLD)
-        draw.rectangle([x - 6 * s, y + 6 * s, x + 6 * s, y + 16 * s], fill=INK)
-    elif kind == "mirror":
-        draw.rounded_rectangle([x - 18 * s, y - 28 * s, x + 18 * s, y + 28 * s], 8, outline=GOLD, width=4)
-        draw.ellipse([x - 8 * s, y - 10 * s, x + 8 * s, y + 12 * s], fill=(232, 214, 196))
+        draw.rounded_rectangle([x - 18 * s, y - 8 * s, x + 18 * s, y + 28 * s], 4, fill=(92, 58, 40))
+        draw.ellipse([x - 20 * s, y - 16 * s, x + 20 * s, y + 6 * s], fill=(232, 196, 140))
+        draw.arc([x + 14 * s, y - 4 * s, x + 34 * s, y + 22 * s], 280, 80, fill=CREAM, width=3)
 
 
 def paint_person(
     base: Image.Image,
-    plate: Image.Image,
     cx: float,
     foot: float,
     scale: float,
     facing: str,
+    build: str,
     pose: str,
     skin_i: int,
     hair: str,
     cloth_i: int,
     expr: str,
-    prop: str | None,
+    gesture: str,
     seed: int,
 ) -> None:
     s = scale
     skin = SKIN[skin_i % len(SKIN)]
     hair_c = HAIR[seed % len(HAIR)]
+    cloth, _fold, bands = CLOTH[cloth_i % len(CLOTH)]
     sign = 0 if facing == "front" else (1 if facing == "right" else -1)
-    chest = foot - (460 * s if pose == "stand" else 320 * s)
-    hy = chest - 145 * s
-    # Paper shadow, offset like a scrap that was set down by hand.
-    shadow = Image.new("RGBA", base.size, (0, 0, 0, 0))
-    ImageDraw.Draw(shadow).ellipse([cx - 90 * s, foot - 16 * s, cx + 100 * s, foot + 22 * s], fill=(40, 24, 16, 80))
-    base.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(6)))
-
-    if pose == "stand":
-        parts = [[
-            (cx - 72 * s, chest + 8 * s),
-            (cx + 78 * s, chest - 4 * s),
-            (cx + 108 * s, chest + 170 * s),
-            (cx + 156 * s, foot),
-            (cx - 164 * s, foot - 12 * s),
-            (cx - 96 * s, chest + 180 * s),
-        ]]
-    else:
-        parts = [
-            [
-                (cx - 74 * s, chest + 4 * s),
-                (cx + 78 * s, chest - 8 * s),
-                (cx + 90 * s, chest + 148 * s),
-                (cx - 86 * s, chest + 156 * s),
-            ],
-            [
-                (cx - 110 * s, chest + 132 * s),
-                (cx + 30 * s, chest + 118 * s),
-                (cx + 200 * s, chest + 148 * s),
-                (cx + 176 * s, chest + 198 * s),
-                (cx - 80 * s, chest + 188 * s),
-            ],
-            [
-                (cx + 150 * s, chest + 170 * s),
-                (cx + 188 * s, chest + 156 * s),
-                (cx + 168 * s, foot),
-                (cx + 124 * s, foot - 6 * s),
-            ],
-        ]
-    body = parts[0]
-    _ground, fold, _bands = CLOTH[cloth_i % len(CLOTH)]
-    for part in parts:
-        paste_poly(base, [(x - 8, y + 10) for x, y in part], CREAM + (200,))
-    paste_poly(base, [body[0], body[1], (cx + 8 * s, chest + 150 * s), (cx - 48 * s, chest + 156 * s)], fold + (255,))
-    for part in parts:
-        base.alpha_composite(cloth_body(plate, part, cloth_i, seed))
-        ImageDraw.Draw(base).line(part + [part[0]], fill=CREAM + (230,), width=3)
-
-    # Shawl over the far shoulder. White netela, one colored edge.
-    if cloth_i % 2 == 0:
-        shawl = [
-            (cx - 80 * s, chest + 4 * s),
-            (cx + 20 * s, chest - 20 * s),
-            (cx + 70 * s, chest + 80 * s),
-            (cx - 20 * s, chest + 150 * s),
-        ]
-        paste_poly(base, shawl, (244, 238, 228, 235))
-        ImageDraw.Draw(base).line([shawl[0], shawl[3]], fill=(168, 52, 46, 220), width=4)
-
-    neck = [
-        (cx - 22 * s, hy + 78 * s),
-        (cx + 22 * s, hy + 74 * s),
-        (cx + 30 * s, chest + 16 * s),
-        (cx - 28 * s, chest + 18 * s),
-    ]
-    paste_poly(base, neck, skin + (255,))
-
     near = sign if sign else 1
-    shoulder = (cx + near * 62 * s, chest + 16 * s)
-    elbow = (cx + near * 110 * s, chest + 90 * s)
-    hand = (cx + near * 132 * s, chest + 36 * s if prop in {"mask", "flower", "bulb"} else chest + 70 * s)
-    if prop in {"phone", "cup", "book", "mirror"}:
-        hand = (cx + near * 78 * s, chest + 48 * s)
-    limb(base, (cx - near * 58 * s, chest + 20 * s), (cx - near * 90 * s, chest + 120 * s), 11 * s, skin + (255,))
-    limb(base, shoulder, elbow, 12 * s, skin + (255,))
-    limb(base, elbow, hand, 10 * s, skin + (255,))
-    paste_poly(base, blob(hand[0], hand[1], 16 * s, 14 * s, seed + 3, 14), skin + (255,))
+    shadow = Image.new("RGBA", base.size, (0, 0, 0, 0))
+    ImageDraw.Draw(shadow).ellipse([cx - 110 * s, foot - 18 * s, cx + 120 * s, foot + 26 * s], fill=(40, 24, 16, 70))
+    base.alpha_composite(shadow.filter(ImageFilter.GaussianBlur(5)))
 
-    hair_back(base, cx + sign * 8 * s, hy, s, hair, hair_c, seed)
-    if facing == "front":
-        paste_poly(base, blob(cx, hy + 10 * s, 78 * s, 96 * s, seed + 5, 32), skin + (255,))
-        # A paper highlight and a little warmth in the cheek. Still flat gouache.
-        paste_poly(base, blob(cx - 18 * s, hy - 16 * s, 28 * s, 22 * s, seed + 8, 12), tuple(min(255, c + 24) for c in skin) + (140,))
+    if pose == "curl":
+        solid(base, [
+            (cx - 170 * s, foot - 20 * s), (cx - 70 * s, foot - 250 * s), (cx + 40 * s, foot - 280 * s),
+            (cx + 180 * s, foot - 90 * s), (cx + 140 * s, foot), (cx - 150 * s, foot + 6 * s),
+        ], cloth)
+        hy = foot - 230 * s
+        hair_back(base, cx - 10 * s, hy, s * 0.8, hair, hair_c, seed)
+        front_head(base, cx - 10 * s, hy, s * 0.82, skin, "man")
         draw = ImageDraw.Draw(base)
-        draw.ellipse([cx - 46 * s, hy + 28 * s, cx - 24 * s, hy + 44 * s], fill=(186, 110, 96, 70))
-        draw.ellipse([cx + 24 * s, hy + 30 * s, cx + 44 * s, hy + 44 * s], fill=(186, 110, 96, 70))
-        ear_x = cx - 70 * s
-        draw.ellipse([ear_x - 10 * s, hy + 8 * s, ear_x + 12 * s, hy + 36 * s], fill=tuple(max(0, c - 16) for c in skin) + (255,))
-        features(draw, cx, hy, s, expr, 0.6 if sign == 0 else sign)
-        if seed % 3 == 0:
-            draw.ellipse([ear_x - 3 * s, hy + 28 * s, ear_x + 5 * s, hy + 36 * s], outline=GOLD, width=2)
-    else:
-        profile_head(base, cx, hy, s, skin, facing, expr)
-    hair_front(base, cx, hy, s, hair, hair_c, seed, facing)
+        features(draw, cx - 10 * s, hy, s * 0.82, expr, 0)
+        hair_front(base, cx - 10 * s, hy, s * 0.8, hair, hair_c, seed, "front")
+        return
 
-    if prop:
-        paint_prop(ImageDraw.Draw(base), prop, hand[0] + near * 8 * s, hand[1] - 8 * s, s * 1.15)
+    if pose == "sit":
+        shoulder = foot - 310 * s
+        hip = foot - 150 * s
+    else:
+        shoulder = foot - 450 * s
+        hip = foot - 210 * s
+    hy = shoulder - 150 * s
+    scx = cx + (near * 36 * s if pose == "run" else 0)
+
+    if build == "woman" and pose != "run":
+        solid(base, [
+            (scx - 78 * s, shoulder + 8 * s), (scx + 84 * s, shoulder),
+            (scx + 168 * s, foot - 6 * s), (scx + 40 * s, foot + 4 * s),
+            (scx - 150 * s, foot), (scx - 120 * s, hip),
+        ], cloth)
+        hem(ImageDraw.Draw(base), scx - 130 * s, scx + 145 * s, foot - 28 * s, bands)
+        if gesture == "belly":
+            paste_poly(base, blob(scx + 6 * s, shoulder + 188 * s, 92 * s, 84 * s, seed, 28), (232, 214, 198, 255))
+            ImageDraw.Draw(base).arc([scx - 78 * s, shoulder + 150 * s, scx + 96 * s, shoulder + 300 * s], 200, 340, fill=INK, width=3)
+        shoe(base, scx - 70 * s, foot, s, -1)
+        shoe(base, scx + 70 * s, foot, s, 1)
+    elif pose == "sit":
+        solid(base, [
+            (scx - 78 * s, shoulder), (scx + 82 * s, shoulder - 6 * s),
+            (scx + 70 * s, hip), (scx - 66 * s, hip + 8 * s),
+        ], cloth)
+        solid(base, [
+            (scx - 70 * s, hip), (scx + 50 * s, hip - 8 * s),
+            (scx + 210 * s, hip + 36 * s), (scx + 180 * s, hip + 78 * s), (scx - 40 * s, hip + 48 * s),
+        ], (36, 28, 24))
+        solid(base, [
+            (scx + 168 * s, hip + 48 * s), (scx + 210 * s, hip + 40 * s),
+            (scx + 196 * s, foot), (scx + 150 * s, foot - 4 * s),
+        ], (36, 28, 24))
+        shoe(base, scx + 188 * s, foot, s, 1)
+    elif pose == "run":
+        solid(base, [
+            (scx - 70 * s, shoulder), (scx + 78 * s, shoulder - 16 * s),
+            (scx + 58 * s, hip), (scx - 62 * s, hip + 10 * s),
+        ], cloth)
+        solid(base, [
+            (scx - 20 * s, hip), (scx + 40 * s, hip - 8 * s),
+            (scx + near * 150 * s, foot - 20 * s), (scx + near * 108 * s, foot),
+        ], (36, 28, 24))
+        solid(base, [
+            (scx - 40 * s, hip + 6 * s), (scx + 10 * s, hip),
+            (scx - near * 130 * s, foot - 30 * s), (scx - near * 80 * s, foot - 8 * s),
+        ], (48, 36, 30))
+        shoe(base, scx + near * 130 * s, foot - 8 * s, s, near)
+        shoe(base, scx - near * 110 * s, foot - 16 * s, s, -near)
+    else:
+        solid(base, [
+            (scx - 86 * s, shoulder + 6 * s), (scx + 90 * s, shoulder - 4 * s),
+            (scx + 72 * s, hip), (scx - 68 * s, hip + 8 * s),
+        ], cloth)
+        solid(base, [
+            (scx - 66 * s, hip), (scx - 6 * s, hip + 4 * s),
+            (scx - 2 * s, foot - 8 * s), (scx - 78 * s, foot),
+        ], (36, 28, 24))
+        solid(base, [
+            (scx + 8 * s, hip + 2 * s), (scx + 68 * s, hip),
+            (scx + 84 * s, foot), (scx + 8 * s, foot - 6 * s),
+        ], (28, 22, 18))
+        shoe(base, scx - 40 * s, foot, s, -1)
+        shoe(base, scx + 46 * s, foot, s, 1)
+        if build == "elder":
+            paste_poly(base, [
+                (scx - 100 * s, shoulder - 10 * s), (scx + 20 * s, shoulder - 30 * s),
+                (scx + 46 * s, hip + 20 * s), (scx - 30 * s, foot - 20 * s), (scx - 110 * s, hip),
+            ], (236, 226, 210, 230))
+            ImageDraw.Draw(base).line([(scx - 96 * s, shoulder), (scx - 24 * s, foot - 30 * s)], fill=(168, 52, 46, 220), width=5)
+
+    paste_poly(base, [
+        (scx - 20 * s, hy + 78 * s), (scx + 20 * s, hy + 74 * s),
+        (scx + 28 * s, shoulder + 16 * s), (scx - 26 * s, shoulder + 18 * s),
+    ], skin + (255,))
+    hair_back(base, scx, hy, s, hair, hair_c, seed)
+    front_head(base, scx, hy, s, skin, build)
+    draw = ImageDraw.Draw(base)
+    ear = tuple(max(0, c - 18) for c in skin)
+    draw.ellipse([scx - 84 * s, hy + 4 * s, scx - 60 * s, hy + 36 * s], fill=ear + (255,))
+    draw.ellipse([scx + 60 * s, hy + 4 * s, scx + 84 * s, hy + 36 * s], fill=ear + (255,))
+    features(draw, scx, hy, s, expr, float(sign))
+    if build == "elder" or hair == "beard":
+        beard(base, scx, hy, s)
+    if hair == "mustache":
+        draw.arc([scx - 22 * s, hy + 40 * s, scx + 22 * s, hy + 62 * s], 10, 170, fill=(42, 28, 20), width=4)
+    if expr == "shy":
+        for dx in (-18, 2, 20):
+            draw.ellipse([scx + dx * s, hy - 20 * s, scx + dx * s + 7 * s, hy - 6 * s], fill=(120, 170, 190, 180))
+    if build == "woman" and cloth_i % 2 == 0:
+        draw.ellipse([scx - 78 * s, hy + 22 * s, scx - 66 * s, hy + 34 * s], outline=GOLD, width=2)
+    hair_front(base, scx, hy, s, hair, hair_c, seed, facing)
+    arm_gesture = "run" if pose == "run" else ("reach" if gesture == "flower" else ("phone" if gesture == "phone_off" else gesture))
+    hold = arms(base, scx, shoulder, hip, hy, s, skin, arm_gesture, near)
+    if gesture in {"phone", "phone_off"}:
+        prop_at(base, "phone_off" if gesture == "phone_off" else "phone", hold[0], hold[1], s)
+    elif gesture == "bag":
+        prop_at(base, "bag", hold[0], hold[1] + 10 * s, s)
+    elif gesture == "flower":
+        prop_at(base, "flower", hold[0] + near * 10 * s, hold[1] - 36 * s, s)
+    elif gesture == "cup":
+        prop_at(base, "cup", scx + near * 70 * s, shoulder + 40 * s, s)
+
+
+def body_guard(mask: Image.Image, people: list) -> Image.Image:
+    draw = ImageDraw.Draw(mask)
+    for person in people:
+        cx, foot, scale = person[0], person[1], person[2]
+        top = foot - 720 * scale
+        draw.ellipse([cx - 200 * scale, top, cx + 210 * scale, foot + 30 * scale], fill=0)
+    return mask
+
+
+def child(base: Image.Image, cx: float, foot: float, s: float, skin, cloth) -> None:
+    hy = foot - 120 * s
+    paste_poly(base, blob(cx, hy, 36 * s, 40 * s, 3, 16), skin + (255,))
+    solid(base, [(cx - 28 * s, hy + 30 * s), (cx + 30 * s, hy + 26 * s), (cx + 40 * s, foot), (cx - 36 * s, foot)], cloth)
+    ImageDraw.Draw(base).arc([cx - 10 * s, hy + 6 * s, cx + 12 * s, hy + 22 * s], 10, 170, fill=ROSE, width=2)
 
 
 def rain(base: Image.Image) -> None:
     draw = ImageDraw.Draw(base)
     rnd = random.Random(15)
-    for _ in range(70):
+    for _ in range(80):
         x, y = rnd.randint(40, W - 40), rnd.randint(40, H - 40)
-        draw.line([(x, y), (x - 14, y + 36)], fill=(226, 232, 236, 110), width=2)
-
-
-def fork(base: Image.Image, cx: float) -> None:
-    draw = ImageDraw.Draw(base)
-    draw.line([(cx, 1320), (cx, 1080)], fill=CREAM, width=8)
-    draw.line([(cx, 1080), (cx - 220, 860)], fill=GOLD, width=8)
-    draw.line([(cx, 1080), (cx + 230, 840)], fill=CREAM, width=8)
-
-
-# cx, foot, scale, facing, pose, skin, hair, cloth, expr, prop, lean
-People = list[tuple]
-SCENES: dict[str, dict] = {
-    "cover": {"people": [(390, 1500, 0.78, "right", "stand", 1, "wrap", 0, "soft", "book", -4)]},
-    "end": {"people": [(760, 1480, 0.74, "left", "stand", 3, "bun", 2, "closed", "book", 3)], "quiet": True},
-    "01": {"people": [(860, 1500, 0.95, "left", "sit", 0, "crop", 4, "down", None, -2)]},
-    "02": {"people": [(640, 1520, 0.86, "front", "stand", 2, "afro", 1, "flat", None, 1)]},
-    "03": {"people": [(340, 1480, 0.78, "right", "stand", 1, "braids", 0, "down", None, -2), (860, 1480, 0.78, "left", "stand", 4, "crop", 5, "soft", None, 2)]},
-    "04": {"people": [(700, 1480, 0.78, "left", "stand", 3, "wrap", 2, "closed", None, -2)]},
-    "05": {"people": [(400, 1500, 0.72, "right", "stand", 0, "bun", 3, "soft", None, -2), (800, 1500, 0.72, "left", "stand", 3, "braids", 0, "soft", None, 2)]},
-    "06": {"people": [(680, 1500, 0.82, "front", "stand", 1, "afro", 0, "open", None, -1)]},
-    "07": {"people": [(640, 1490, 0.78, "front", "stand", 4, "braids", 5, "soft", "flower", 3)]},
-    "08": {"people": [(760, 1500, 0.76, "left", "stand", 2, "crop", 1, "flat", None, -3)]},
-    "09": {"people": [(340, 1510, 0.64, "right", "stand", 0, "afro", 4, "soft", None, -2), (880, 1490, 0.66, "left", "stand", 3, "braids", 0, "soft", None, 2)]},
-    "10": {"people": [(960, 1520, 0.84, "left", "stand", 3, "wrap", 0, "down", None, 1)]},
-    "11": {"people": [(430, 1500, 0.74, "right", "stand", 2, "crop", 1, "down", None, -2), (790, 1480, 0.76, "left", "stand", 4, "braids", 5, "soft", None, 2)]},
-    "12": {"people": [(600, 1470, 0.7, "front", "stand", 2, "afro", 0, "soft", None, 0), (300, 1520, 0.52, "right", "stand", 0, "crop", 5, "down", None, -4), (920, 1520, 0.52, "left", "stand", 3, "bun", 1, "down", None, 4)]},
-    "13": {"people": [(860, 1340, 0.98, "left", "stand", 3, "wrap", 0, "soft", "jebena", 1)]},
-    "14": {"people": [(640, 1490, 0.78, "front", "stand", 2, "crop", 1, "down", None, -2)]},
-    "15": {"people": [(640, 1580, 0.74, "front", "sit", 0, "wrap", 2, "closed", None, 1)], "rain": True},
-    "16": {"people": [(520, 1500, 0.9, "right", "stand", 2, "crop", 3, "open", None, -8), (900, 1460, 0.62, "left", "stand", 4, "wrap", 0, "flat", None, 2)]},
-    "17": {"people": [(300, 1500, 0.7, "right", "stand", 1, "bun", 4, "open", "bulb", -3)]},
-    "18": {"people": [(640, 1520, 0.82, "front", "stand", 3, "afro", 5, "down", None, 0)]},
-    "19": {"people": [(600, 1500, 0.78, "front", "sit", 0, "braids", 1, "down", None, -1)]},
-    "20": {"people": [(700, 1460, 0.72, "front", "sit", 4, "crop", 3, "closed", "cup", 2)]},
-    "21": {"people": [(520, 1500, 0.88, "front", "stand", 1, "afro", 5, "flat", "mask", -1)]},
-    "22": {"people": [(460, 1500, 0.86, "right", "stand", 2, "crop", 4, "flat", "bag", 2)]},
-    "23": {"people": [(480, 1490, 0.78, "right", "stand", 3, "wrap", 0, "soft", "mirror", -2)]},
-    "24": {"people": [(340, 1520, 0.7, "right", "stand", 0, "crop", 3, "open", "coin", -2), (900, 1540, 0.64, "left", "stand", 4, "braids", 2, "flat", None, 3)]},
-    "25": {"people": [(430, 1500, 0.86, "right", "stand", 2, "afro", 1, "down", None, -2)]},
-    "26": {"people": [(420, 1500, 0.7, "right", "stand", 1, "bun", 0, "open", "cup", -2), (780, 1500, 0.7, "left", "stand", 4, "crop", 3, "soft", "cup", 2)]},
-    "27": {"people": [(400, 1500, 0.66, "front", "stand", 0, "crop", 2, "down", "phone", -2), (860, 1490, 0.64, "left", "stand", 3, "wrap", 0, "soft", None, 2)]},
-    "28": {"people": [(400, 1500, 0.66, "right", "stand", 4, "braids", 5, "soft", "book", -3), (840, 1490, 0.66, "left", "stand", 1, "afro", 4, "open", None, 3)]},
-}
-
-
-def chair(draw: ImageDraw.ImageDraw, x: float, y: float, s: float = 1.0) -> None:
-    draw.rectangle([x, y - 120 * s, x + 16 * s, y + 8 * s], fill=CREAM)
-    draw.polygon([(x, y), (x + 130 * s, y - 10 * s), (x + 130 * s, y + 12 * s), (x, y + 18 * s)], fill=CREAM)
-    draw.rectangle([x + 16 * s, y + 12 * s, x + 28 * s, y + 90 * s], fill=CREAM)
-    draw.rectangle([x + 100 * s, y + 6 * s, x + 112 * s, y + 84 * s], fill=CREAM)
-
-
-def big_phone(draw: ImageDraw.ImageDraw, x: float, y: float, s: float = 1.0, struck: bool = False) -> None:
-    draw.rounded_rectangle([x - 70 * s, y - 120 * s, x + 70 * s, y + 120 * s], 16, fill=(28, 22, 18), outline=GOLD, width=4)
-    draw.rectangle([x - 52 * s, y - 96 * s, x + 52 * s, y + 70 * s], fill=(244, 232, 210))
-    for i, width in enumerate((70, 48, 80)):
-        yy = y - 70 * s + i * 36 * s
-        draw.rectangle([x - 40 * s, yy, x - 40 * s + width * s, yy + 16 * s], fill=(120, 72, 48))
-    if struck:
-        draw.line([(x - 48 * s, y - 20 * s), (x + 48 * s, y + 40 * s)], fill=(168, 52, 46), width=6)
-
-
-def door(draw: ImageDraw.ImageDraw, x: float, y: float) -> None:
-    draw.rounded_rectangle([x, y, x + 220, y + 340], 8, fill=(62, 40, 30), outline=GOLD, width=5)
-    draw.rectangle([x + 28, y + 36, x + 192, y + 250], outline=CREAM, width=3)
-    draw.ellipse([x + 168, y + 180, x + 186, y + 198], fill=GOLD)
-
-
-def bus(draw: ImageDraw.ImageDraw, x: float, y: float) -> None:
-    draw.rounded_rectangle([x, y, x + 760, y + 280], 28, fill=(36, 110, 72), outline=CREAM, width=5)
-    for i in range(5):
-        draw.rounded_rectangle([x + 36 + i * 140, y + 36, x + 150 + i * 140, y + 130], 8, fill=(236, 226, 204))
-    draw.rectangle([x + 300, y + 150, x + 460, y + 250], fill=(24, 70, 48))
-    draw.ellipse([x + 80, y + 240, x + 160, y + 320], fill=(28, 22, 18))
-    draw.ellipse([x + 600, y + 240, x + 680, y + 320], fill=(28, 22, 18))
-
-
-def horse(draw: ImageDraw.ImageDraw, x: float, y: float) -> None:
-    draw.polygon(
-        [(x, y + 40), (x + 70, y), (x + 110, y + 10), (x + 90, y + 36), (x + 150, y + 20), (x + 130, y + 70), (x + 40, y + 78)],
-        fill=(232, 214, 180),
-    )
-    draw.line([(x + 70, y), (x + 86, y - 28)], fill=GOLD, width=4)
-
-
-def story_back(base: Image.Image, key: str) -> None:
-    draw = ImageDraw.Draw(base)
-    if key == "18":
-        big_phone(draw, 600, 520, 1.35)
-    elif key == "22":
-        door(draw, 760, 520)
-    elif key == "06":
-        paste_poly(base, blob(780, 980, 90, 160, 6, 20), (28, 18, 16, 180))
+        draw.line([(x, y), (x - 16, y + 42)], fill=(210, 220, 228, 140), width=2)
 
 
 def story_front(base: Image.Image, key: str) -> None:
     draw = ImageDraw.Draw(base)
     if key == "01":
-        chair(draw, 240, 980, 1.7)
+        draw.rectangle([190, 760, 214, 1040], fill=CREAM)
+        draw.rectangle([400, 740, 424, 1020], fill=CREAM)
+        draw.polygon([(170, 760), (450, 720), (450, 770), (170, 812)], fill=CREAM)
+        draw.polygon([(170, 1000), (460, 960), (460, 1010), (170, 1050)], fill=CREAM)
+        draw.rectangle([200, 1030, 224, 1280], fill=CREAM)
+        draw.rectangle([400, 1000, 424, 1260], fill=CREAM)
+        paste_poly(base, [(200, 980), (430, 950), (400, 1100), (190, 1120)], (244, 238, 228, 235))
+        draw.line([(210, 1080), (390, 1050)], fill=(168, 52, 46), width=5)
     elif key == "02":
-        big_phone(draw, 600, 430, 1.2, struck=True)
+        draw.line([(430, 430), (760, 860)], fill=(168, 52, 46), width=10)
+        draw.line([(740, 450), (450, 840)], fill=(168, 52, 46), width=10)
+        draw.ellipse([250, 1288, 330, 1368], fill=(168, 52, 46))
+        draw.ellipse([300, 1288, 380, 1368], fill=(168, 52, 46))
+        draw.polygon([(250, 1320), (380, 1320), (315, 1420)], fill=(168, 52, 46))
+        draw.polygon([(300, 1360), (430, 1340), (460, 1390), (320, 1410)], fill=(62, 42, 32))
     elif key == "03":
-        draw.line([(430, 620), (600, 540), (770, 620)], fill=GOLD, width=4)
-        draw.ellipse([586, 526, 614, 554], fill=CREAM, outline=GOLD)
+        draw.line([(400, 760), (600, 700), (800, 760)], fill=GOLD, width=6)
+        draw.ellipse([578, 678, 622, 722], outline=CREAM, width=4)
+        draw.ellipse([590, 692, 604, 708], fill=INK)
     elif key == "05":
-        draw.ellipse([560, 860, 640, 920], outline=GOLD, width=6)
-        draw.polygon([(600, 980), (680, 1180), (520, 1180)], outline=CREAM, width=4)
+        draw.ellipse([545, 860, 655, 940], outline=GOLD, width=10)
+        draw.ellipse([575, 888, 625, 918], outline=CREAM, width=4)
+        draw.polygon([(600, 1020), (760, 1280), (440, 1280)], outline=CREAM, width=6)
+        draw.rectangle([560, 1120, 640, 1280], outline=GOLD, width=4)
+        child(base, 540, 1540, 1.05, SKIN[2], CLOTH[3][0])
+        child(base, 680, 1560, 0.85, SKIN[4], CLOTH[0][0])
+        draw.ellipse([575, 1088, 625, 1138], fill=SKIN[0])
+    elif key == "06":
+        draw.ellipse([470, 280, 560, 360], outline=CREAM, width=8)
+        draw.ellipse([640, 280, 730, 360], outline=CREAM, width=8)
+        draw.ellipse([500, 308, 524, 332], fill=INK)
+        draw.ellipse([670, 308, 694, 332], fill=INK)
     elif key == "07":
-        draw.ellipse([820, 280, 980, 440], outline=CREAM, width=4)
-        paste_poly(base, blob(900, 360, 36, 42, 7, 16), SKIN[1] + (255,))
+        draw.ellipse([160, 220, 340, 400], fill=(232, 186, 96))
+        draw.ellipse([860, 240, 1040, 420], outline=CREAM, width=8)
+        paste_poly(base, blob(980, 520, 70, 80, 7, 18), SKIN[3] + (255,))
+        draw.arc([930, 540, 1030, 600], 10, 170, fill=ROSE, width=3)
     elif key == "08":
-        big_phone(draw, 600, 420, 1.15)
-        draw.arc([760, 180, 900, 280], 200, 20, fill=CREAM, width=4)
+        draw.ellipse([860, 180, 1040, 360], outline=CREAM, width=6)
     elif key == "10":
-        draw.rounded_rectangle([180, 280, 360, 380], 24, outline=CREAM, width=4)
-        draw.rounded_rectangle([820, 300, 1000, 400], 24, outline=GOLD, width=4)
-        draw.arc([860, 1080, 1080, 1240], 20, 160, fill=(168, 52, 46), width=8)
+        draw.rounded_rectangle([140, 260, 420, 400], 28, outline=CREAM, width=5)
+        draw.rounded_rectangle([760, 240, 1060, 390], 28, outline=GOLD, width=5)
+        draw.text((210, 300), "Hi", fill=CREAM)
+        draw.text((860, 285), "Hi", fill=GOLD)
+        for i, x in enumerate((180, 230, 280)):
+            draw.ellipse([x, 1280 + (i % 2) * 20, x + 36, 1310 + (i % 2) * 20], outline=CREAM, width=3)
     elif key == "11":
-        draw.ellipse([620, 700, 760, 800], fill=SKIN[4] + (255,))
-    elif key == "14":
-        draw.ellipse([760, 640, 980, 860], outline=(168, 52, 46), width=8)
-        draw.ellipse([300, 1100, 390, 1190], fill=(176, 64, 58))
-    elif key == "15":
-        paste_poly(base, [(860, 980), (1080, 1020), (1040, 1280), (820, 1240)], (236, 226, 210, 160))
-    elif key == "16":
+        paste_poly(base, [(700, 620), (860, 560), (900, 640), (760, 720)], SKIN[4] + (255,))
         for i in range(4):
-            draw.line([(180, 700 + i * 40), (360, 680 + i * 40)], fill=CREAM, width=4)
+            draw.rounded_rectangle([820 + i * 8, 520, 836 + i * 8, 600], 4, fill=SKIN[4])
+    elif key == "14":
+        palm = SKIN[2]
+        draw.ellipse([760, 700, 980, 960], fill=palm)
+        for i in range(4):
+            draw.rounded_rectangle([790 + i * 46, 520, 828 + i * 46, 730], 12, fill=palm)
+        draw.rounded_rectangle([930, 760, 1020, 900], 14, fill=palm)
+        for i in range(6):
+            a = math.tau * i / 6
+            draw.ellipse([300 + math.cos(a) * 28 - 16, 1240 + math.sin(a) * 28 - 16, 300 + math.cos(a) * 28 + 16, 1240 + math.sin(a) * 28 + 16], fill=(176, 64, 58))
+    elif key == "15":
+        paste_poly(base, [(860, 980), (1120, 940), (1160, 1320), (820, 1340)], (236, 226, 210, 200))
+        draw.line([(880, 1280), (1100, 1240)], fill=(168, 52, 46), width=6)
+    elif key == "16":
+        for i in range(5):
+            draw.line([(180, 1180 + i * 24), (420, 1140 + i * 24)], fill=CREAM, width=5)
     elif key == "19":
-        for i in range(7):
-            a = math.tau * i / 7
-            cx, cy = 600 + math.cos(a) * 220, 520 + math.sin(a) * 120
-            draw.ellipse([cx - 16, cy - 16, cx + 16, cy + 16], outline=GOLD, width=3)
-        draw.arc([180, 700, 520, 1100], 200, 40, fill=CREAM, width=10)
+        for i in range(8):
+            a = math.tau * i / 8
+            x, y = 620 + math.cos(a) * 250, 460 + math.sin(a) * 140
+            draw.ellipse([x - 22, y - 22, x + 22, y + 22], outline=GOLD, width=3)
+        draw.arc([120, 860, 520, 1320], 200, 20, fill=CREAM, width=16)
+        child(base, 300, 1240, 1.3, SKIN[2], CLOTH[0][0])
     elif key == "20":
-        horse(draw, 760, 420)
+        draw.polygon([(430, 1180), (760, 1140), (760, 1220), (430, 1240)], fill=(92, 58, 40))
+        draw.polygon(
+            [(820, 520), (940, 430), (1020, 470), (980, 540), (1120, 500), (1040, 640), (860, 660)],
+            fill=(232, 214, 180),
+        )
+        draw.line([(940, 450), (980, 390)], fill=GOLD, width=5)
+        draw.line([(700, 430), (860, 520)], fill=CREAM, width=4)
     elif key == "21":
-        draw.polygon(blob(620, 620, 70, 90, 21, 24), fill=CREAM)
-        draw.ellipse([575, 590, 610, 625], fill=INK)
-        draw.ellipse([640, 590, 675, 625], fill=INK)
+        paste_poly(base, blob(900, 1140, 78, 96, 21, 22), CREAM + (255,))
+        draw.ellipse([860, 1110, 900, 1150], fill=INK)
+        draw.ellipse([930, 1110, 970, 1150], fill=INK)
+        draw.arc([870, 1170, 960, 1220], 15, 165, fill=INK, width=3)
+    elif key == "22":
+        draw.rounded_rectangle([720, 460, 1080, 1120], 12, fill=(62, 40, 30), outline=GOLD, width=6)
+        draw.rectangle([770, 530, 1030, 900], outline=CREAM, width=4)
+        draw.ellipse([980, 760, 1020, 800], fill=GOLD)
     elif key == "23":
-        draw.rounded_rectangle([760, 480, 1040, 980], 18, outline=GOLD, width=6)
-        paste_poly(base, blob(900, 700, 70, 90, 23, 18), (90, 60, 48, 255))
+        draw.rounded_rectangle([700, 380, 1100, 1180], 20, outline=GOLD, width=8)
+        paste_poly(base, blob(900, 700, 80, 100, 23, 20), (90, 58, 46, 255))
+        draw.line([(860, 820), (940, 820)], fill=GOLD, width=4)
+        draw.ellipse([860, 660, 890, 690], fill=INK)
+        draw.ellipse([920, 660, 950, 690], fill=INK)
     elif key == "24":
-        bus(draw, 220, 560)
-        for i, dx in enumerate((-18, 0, 16)):
-            draw.ellipse([430 + dx - 10, 860 + i * 6, 430 + dx + 14, 880 + i * 6], fill=GOLD, outline=INK)
-        draw.rounded_rectangle([860, 900, 980, 1040], 8, outline=CREAM, width=4)
+        draw.rounded_rectangle([140, 180, 1060, 560], 30, fill=(36, 110, 72), outline=CREAM, width=5)
+        for i in range(5):
+            draw.rounded_rectangle([180 + i * 160, 230, 310 + i * 160, 380], 8, fill=(236, 226, 204))
+        draw.rectangle([500, 400, 680, 540], fill=(24, 70, 48))
+        draw.ellipse([240, 500, 360, 620], fill=(28, 22, 18))
+        draw.ellipse([840, 500, 960, 620], fill=(28, 22, 18))
+        for i, dx in enumerate((-16, 0, 18)):
+            draw.ellipse([700 + dx, 1080 + i * 8, 728 + dx, 1106 + i * 8], fill=GOLD, outline=INK)
     elif key == "25":
-        draw.line([(520, 980), (700, 760)], fill=GOLD, width=8)
-        draw.line([(520, 980), (860, 740)], fill=CREAM, width=8)
+        draw.line([(780, 1360), (780, 980)], fill=CREAM, width=18)
+        draw.line([(780, 980), (520, 560)], fill=GOLD, width=18)
+        draw.line([(780, 980), (1080, 540)], fill=CREAM, width=18)
     elif key == "26":
-        draw.ellipse([520, 220, 700, 400], fill=(232, 196, 120))
+        draw.ellipse([480, 180, 740, 440], fill=(232, 186, 96))
+        draw.polygon([(360, 1120), (860, 1080), (860, 1160), (360, 1180)], fill=(92, 58, 40))
     elif key == "27":
-        big_phone(draw, 620, 640, 0.7)
+        draw.line([(560, 980), (700, 980)], fill=(168, 52, 46), width=6)
     elif key == "28":
-        draw.line([(520, 860), (680, 860)], fill=CREAM, width=6)
-        draw.ellipse([560, 820, 640, 900], outline=GOLD, width=4)
+        draw.rounded_rectangle([500, 1180, 700, 1320], 8, outline=CREAM, width=4)
+        draw.line([(520, 1200), (680, 1300)], fill=(168, 52, 46), width=5)
+        draw.line([(680, 1200), (520, 1300)], fill=(168, 52, 46), width=5)
 
+
+# cx, foot, scale, facing, build, pose, skin, hair, cloth, expr, gesture
+People = list[tuple]
+SCENES: dict[str, dict] = {
+    "end": {"people": [(760, 1480, 0.74, "left", "woman", "stand", 3, "bun", 2, "closed", "side")]},
+    "01": {"people": [(860, 1540, 1.05, "front", "man", "sit", 0, "beard", 3, "down", "think")]},
+    "02": {"people": [(900, 1520, 1.02, "left", "man", "stand", 2, "afro", 1, "worry", "reach")]},
+    "03": {"people": [
+        (300, 1500, 0.98, "right", "man", "stand", 1, "fade", 2, "shy", "side"),
+        (900, 1500, 0.98, "left", "woman", "stand", 4, "long", 0, "flat", "cross"),
+    ]},
+    "05": {"people": [
+        (380, 1500, 0.92, "right", "man", "stand", 0, "crop", 4, "smile", "reach"),
+        (820, 1500, 0.92, "left", "woman", "stand", 3, "braids", 5, "smile", "reach"),
+    ]},
+    "06": {"people": [
+        (880, 1460, 0.95, "left", "man", "stand", 4, "bald", 2, "flat", "reach"),
+        (520, 1520, 1.02, "front", "man", "stand", 1, "afro", 0, "worry", "side"),
+    ]},
+    "07": {"people": [(620, 1500, 1.0, "front", "man", "stand", 2, "braids", 3, "smile", "flower")]},
+    "08": {"people": [(640, 1500, 1.02, "front", "man", "sit", 0, "fade", 1, "worry", "phone_off")]},
+    "10": {"people": [(960, 1520, 1.05, "front", "woman", "stand", 3, "wrap", 0, "worry", "belly")]},
+    "11": {"people": [
+        (420, 1520, 1.0, "front", "man", "stand", 2, "crop", 2, "shy", "side"),
+        (860, 1480, 0.96, "left", "woman", "stand", 4, "braids", 5, "soft", "reach"),
+    ]},
+    "14": {"people": [(520, 1500, 1.05, "front", "woman", "stand", 3, "long", 0, "worry", "side")]},
+    "15": {"people": [(480, 1500, 1.15, "front", "man", "curl", 1, "wrap", 2, "closed", "side")], "rain": True},
+    "16": {"people": [
+        (980, 1500, 0.88, "left", "woman", "stand", 4, "wrap", 0, "flat", "side"),
+        (520, 1500, 1.05, "right", "man", "run", 2, "crop", 3, "open", "side"),
+    ]},
+    "18": {"people": [(620, 1520, 1.08, "front", "man", "sit", 0, "afro", 5, "down", "phone")]},
+    "19": {"people": [(760, 1500, 1.0, "front", "man", "sit", 1, "beard", 1, "worry", "think")]},
+    "20": {"people": [(460, 1460, 0.95, "front", "elder", "sit", 4, "bald", 3, "closed", "cup")]},
+    "21": {"people": [(560, 1520, 1.05, "right", "man", "stand", 2, "fade", 0, "smile", "reach")]},
+    "22": {"people": [(420, 1520, 1.05, "right", "man", "stand", 0, "crop", 4, "flat", "bag")]},
+    "23": {"people": [(420, 1500, 1.02, "right", "man", "stand", 1, "mustache", 5, "flat", "side")]},
+    "24": {"people": [
+        (250, 1420, 0.72, "right", "man", "stand", 2, "crop", 4, "open", "pocket"),
+        (760, 1320, 0.62, "left", "man", "stand", 0, "fade", 1, "smile", "open"),
+    ]},
+    "25": {"people": [(340, 1520, 1.02, "right", "man", "stand", 3, "afro", 2, "worry", "think")]},
+    "26": {"people": [
+        (340, 1500, 0.9, "right", "man", "stand", 1, "afro", 1, "smile", "cup"),
+        (860, 1500, 0.9, "left", "woman", "stand", 4, "bun", 3, "open", "cup"),
+    ]},
+    "27": {"people": [
+        (340, 1500, 0.95, "right", "man", "stand", 0, "beard", 4, "worry", "reach"),
+        (860, 1500, 0.98, "front", "woman", "stand", 3, "long", 5, "down", "phone"),
+    ]},
+    "28": {"people": [
+        (340, 1500, 0.95, "right", "man", "stand", 2, "crop", 2, "soft", "open"),
+        (860, 1500, 0.95, "left", "woman", "stand", 4, "braids", 0, "soft", "open"),
+    ]},
+}
 
 KEEP = {"cover", "end", "04", "09", "12", "13", "17"}
 
 
 def compose(key: str, spec: dict) -> None:
     plate = Image.open(OLD / f"{key}.jpg").convert("RGB").resize((W, H), Image.Resampling.LANCZOS)
-    ground = plate if not spec.get("quiet") else ImageEnhance.Brightness(plate).enhance(1.04)
-    base = ground.convert("RGBA")
-    story_back(base, key)
+    base = plate.convert("RGBA")
     for index, person in enumerate(spec["people"]):
-        cx, foot, scale, facing, pose, skin_i, hair, cloth_i, expr, prop, lean = person
+        cx, foot, scale, facing, build, pose, skin_i, hair, cloth_i, expr, gesture = person
         layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
-        paint_person(layer, plate, cx, foot, scale, facing, pose, skin_i, hair, cloth_i, expr, prop, seed=index * 19 + sum(ord(c) for c in key))
-        if lean:
-            layer = layer.rotate(lean, resample=Image.Resampling.BICUBIC, center=(cx, foot - 280))
+        paint_person(
+            layer, cx, foot, scale, facing, build, pose, skin_i, hair, cloth_i, expr, gesture,
+            seed=index * 17 + sum(ord(c) for c in key) + 3,
+        )
         base.alpha_composite(layer)
-    # The original drawing sits in front of the paper figure wherever they meet.
-    base = Image.composite(plate.convert("RGBA"), base, head_guard(motif_mask(plate), spec["people"]))
+    base = Image.composite(plate.convert("RGBA"), base, body_guard(motif_mask(plate), spec["people"]))
     story_front(base, key)
     if spec.get("rain"):
         rain(base)
-    if spec.get("fork"):
-        fork(base, spec["fork"])
-    grain = Image.effect_noise((W, H), 14).convert("L")
-    base = Image.alpha_composite(base, Image.merge("RGBA", (grain, grain, grain, Image.new("L", (W, H), 22))))
+    grain = Image.effect_noise((W, H), 12).convert("L")
+    base = Image.alpha_composite(base, Image.merge("RGBA", (grain, grain, grain, Image.new("L", (W, H), 14))))
     rgb = base.convert("RGB")
     rgb.save(OUT / f"{key}.jpg", quality=86, optimize=True)
     print(key, (OUT / f"{key}.jpg").stat().st_size)

@@ -19,6 +19,7 @@ export function StoryImage({ src, alt, priority = false }: { src: string; alt: s
           fill
           priority={priority}
           sizes="(max-width: 959px) 100vw, 50vw"
+          style={{ objectFit: "contain", objectPosition: "center" }}
           onError={() => setFailed(true)}
         />
       )}

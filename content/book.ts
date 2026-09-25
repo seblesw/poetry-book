@@ -15,7 +15,7 @@ export const book = {
   ],
   pdfFileName: "Achachir-Gitmoch-Digital-Poetry-Book.pdf",
   coverImage: "/plates/cover.jpg",
-  coverAlt: "ነጭ ነጠላ ለብሶ መጽሐፍ ይዞ ከምልክቱ አጠገብ የቆመ ሰው።",
+  coverAlt: "በቡናማ መስክ ላይ ነጭ ክፍት ቅርጽና የወርቅ ነጥብ ያለው የመጽሐፍ ምልክት።",
   endImage: "/plates/end.jpg",
   endAlt: "መጽሐፉን ይዞ በጸጥታ የቆመ ሰው።",
   /** Default reading music. The player can switch among the classical set. */
