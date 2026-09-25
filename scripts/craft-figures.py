@@ -133,7 +133,13 @@ def hair_back(base: Image.Image, cx: float, hy: float, s: float, kind: str, colo
                     fill=color + (255,),
                     width=5,
                 )
-    # wrap is painted after the face
+    elif kind == "long":
+        paste_poly(base, blob(cx, hy - 24 * s, 108 * s, 70 * s, seed, 22), color + (255,))
+        paste_poly(base, [(cx - 78 * s, hy), (cx - 40 * s, hy - 10 * s), (cx - 28 * s, hy + 210 * s), (cx - 86 * s, hy + 200 * s)], color + (255,))
+        paste_poly(base, [(cx + 40 * s, hy - 10 * s), (cx + 78 * s, hy), (cx + 86 * s, hy + 200 * s), (cx + 28 * s, hy + 210 * s)], color + (255,))
+    elif kind in {"beard", "mustache", "fade"}:
+        paste_poly(base, blob(cx, hy - 34 * s, 100 * s, 52 * s, seed, 20), color + (255,))
+    # bald is bare. wrap is painted after the face.
 
 
 def hair_front(base: Image.Image, cx: float, hy: float, s: float, kind: str, color, seed: int, facing: str) -> None:
@@ -156,24 +162,31 @@ def hair_front(base: Image.Image, cx: float, hy: float, s: float, kind: str, col
 
 
 def features(draw: ImageDraw.ImageDraw, cx: float, hy: float, s: float, expr: str, look: float) -> None:
-    eye_y = hy + (16 * s if expr == "down" else 4 * s)
-    shift = look * 8 * s
+    eye_y = hy + (18 * s if expr in {"down", "shy"} else 2 * s)
+    shift = look * 10 * s
     for side in (-1, 1):
-        ex = cx + side * 26 * s + shift
+        ex = cx + side * 28 * s + shift
         if expr == "closed":
-            draw.arc([ex - 12 * s, eye_y - 4 * s, ex + 12 * s, eye_y + 10 * s], 200, 345, fill=INK, width=3)
+            draw.arc([ex - 14 * s, eye_y - 4 * s, ex + 14 * s, eye_y + 12 * s], 200, 345, fill=INK, width=3)
+        elif expr == "shy":
+            draw.arc([ex - 13 * s, eye_y - 2 * s, ex + 13 * s, eye_y + 10 * s], 200, 345, fill=INK, width=3)
         else:
-            draw.arc([ex - 13 * s, eye_y - 6 * s, ex + 13 * s, eye_y + 8 * s], 205, 345, fill=INK, width=3)
-            px = ex + look * 3 * s
-            draw.ellipse([px - 2.4 * s, eye_y - 1 * s, px + 2.4 * s, eye_y + 4 * s], fill=INK)
-        brow_y = eye_y - 14 * s
-        tilt = -4 * s if expr in {"down", "closed"} else 0
-        draw.line([(ex - 12 * s, brow_y + tilt), (ex + 11 * s, brow_y - tilt)], fill=INK, width=2)
-    draw.arc([cx - 4 * s + shift * 0.2, hy + 16 * s, cx + 14 * s + shift * 0.2, hy + 40 * s], 250, 20, fill=tuple(max(0, c - 28) for c in (140, 90, 64)), width=2)
-    mouth = [cx - 16 * s + shift * 0.15, hy + 48 * s, cx + 16 * s + shift * 0.15, hy + 66 * s]
-    if expr == "open":
-        draw.arc(mouth, 15, 165, fill=ROSE, width=3)
-    elif expr == "flat" or expr == "down":
+            draw.arc([ex - 14 * s, eye_y - 8 * s, ex + 14 * s, eye_y + 10 * s], 200, 350, fill=INK, width=3)
+            px = ex + look * 4 * s
+            draw.ellipse([px - 3 * s, eye_y - 1 * s, px + 3 * s, eye_y + 5 * s], fill=INK)
+        brow_y = eye_y - 16 * s
+        if expr == "worry":
+            draw.line([(ex - 14 * s, brow_y - side * 5 * s), (ex + 14 * s, brow_y + side * 6 * s)], fill=INK, width=3)
+        elif expr in {"down", "closed", "shy"}:
+            draw.line([(ex - 14 * s, brow_y + 3 * s), (ex + 13 * s, brow_y - 2 * s)], fill=INK, width=3)
+        else:
+            draw.line([(ex - 14 * s, brow_y), (ex + 14 * s, brow_y - 1 * s)], fill=INK, width=3)
+    nose = tuple(max(0, c - 36) for c in (150, 96, 68))
+    draw.line([(cx + shift * 0.2, hy + 18 * s), (cx + 8 * s + shift * 0.15, hy + 40 * s)], fill=nose, width=2)
+    mouth = [cx - 18 * s + shift * 0.15, hy + 46 * s, cx + 18 * s + shift * 0.15, hy + 68 * s]
+    if expr in {"open", "smile"}:
+        draw.arc(mouth, 15, 165, fill=ROSE, width=4)
+    elif expr in {"flat", "down", "worry", "shy"}:
         draw.line([(mouth[0], hy + 56 * s), (mouth[2], hy + 58 * s)], fill=ROSE, width=3)
     else:
         draw.arc(mouth, 12, 168, fill=ROSE, width=3)
@@ -380,41 +393,159 @@ People = list[tuple]
 SCENES: dict[str, dict] = {
     "cover": {"people": [(390, 1500, 0.78, "right", "stand", 1, "wrap", 0, "soft", "book", -4)]},
     "end": {"people": [(760, 1480, 0.74, "left", "stand", 3, "bun", 2, "closed", "book", 3)], "quiet": True},
-    "01": {"people": [(820, 1540, 0.92, "left", "sit", 0, "crop", 4, "down", None, -2)]},
-    "02": {"people": [(640, 1500, 0.8, "front", "stand", 2, "afro", 1, "flat", "phone", 2)]},
-    "03": {"people": [(300, 1500, 0.62, "right", "stand", 1, "braids", 0, "down", None, -3), (900, 1510, 0.6, "left", "stand", 4, "crop", 5, "down", None, 3)]},
+    "01": {"people": [(860, 1500, 0.95, "left", "sit", 0, "crop", 4, "down", None, -2)]},
+    "02": {"people": [(640, 1520, 0.86, "front", "stand", 2, "afro", 1, "flat", None, 1)]},
+    "03": {"people": [(340, 1480, 0.78, "right", "stand", 1, "braids", 0, "down", None, -2), (860, 1480, 0.78, "left", "stand", 4, "crop", 5, "soft", None, 2)]},
     "04": {"people": [(700, 1480, 0.78, "left", "stand", 3, "wrap", 2, "closed", None, -2)]},
-    "05": {"people": [(520, 1490, 0.8, "right", "stand", 0, "bun", 3, "down", None, 2)]},
+    "05": {"people": [(400, 1500, 0.72, "right", "stand", 0, "bun", 3, "soft", None, -2), (800, 1500, 0.72, "left", "stand", 3, "braids", 0, "soft", None, 2)]},
     "06": {"people": [(680, 1500, 0.82, "front", "stand", 1, "afro", 0, "open", None, -1)]},
     "07": {"people": [(640, 1490, 0.78, "front", "stand", 4, "braids", 5, "soft", "flower", 3)]},
     "08": {"people": [(760, 1500, 0.76, "left", "stand", 2, "crop", 1, "flat", None, -3)]},
     "09": {"people": [(340, 1510, 0.64, "right", "stand", 0, "afro", 4, "soft", None, -2), (880, 1490, 0.66, "left", "stand", 3, "braids", 0, "soft", None, 2)]},
-    "10": {"people": [(620, 1490, 0.78, "front", "stand", 1, "crop", 3, "open", "phone", 1)]},
-    "11": {"people": [(600, 1500, 0.8, "front", "stand", 4, "wrap", 2, "down", None, -2)]},
+    "10": {"people": [(960, 1520, 0.84, "left", "stand", 3, "wrap", 0, "down", None, 1)]},
+    "11": {"people": [(430, 1500, 0.74, "right", "stand", 2, "crop", 1, "down", None, -2), (790, 1480, 0.76, "left", "stand", 4, "braids", 5, "soft", None, 2)]},
     "12": {"people": [(600, 1470, 0.7, "front", "stand", 2, "afro", 0, "soft", None, 0), (300, 1520, 0.52, "right", "stand", 0, "crop", 5, "down", None, -4), (920, 1520, 0.52, "left", "stand", 3, "bun", 1, "down", None, 4)]},
     "13": {"people": [(860, 1340, 0.98, "left", "stand", 3, "wrap", 0, "soft", "jebena", 1)]},
     "14": {"people": [(640, 1490, 0.78, "front", "stand", 2, "crop", 1, "down", None, -2)]},
     "15": {"people": [(640, 1580, 0.74, "front", "sit", 0, "wrap", 2, "closed", None, 1)], "rain": True},
-    "16": {"people": [(680, 1470, 0.86, "right", "stand", 2, "crop", 3, "flat", None, 2)]},
+    "16": {"people": [(520, 1500, 0.9, "right", "stand", 2, "crop", 3, "open", None, -8), (900, 1460, 0.62, "left", "stand", 4, "wrap", 0, "flat", None, 2)]},
     "17": {"people": [(300, 1500, 0.7, "right", "stand", 1, "bun", 4, "open", "bulb", -3)]},
-    "18": {"people": [(780, 1490, 0.78, "left", "stand", 3, "afro", 5, "flat", "bag", 2)]},
+    "18": {"people": [(640, 1520, 0.82, "front", "stand", 3, "afro", 5, "down", None, 0)]},
     "19": {"people": [(600, 1500, 0.78, "front", "sit", 0, "braids", 1, "down", None, -1)]},
     "20": {"people": [(700, 1460, 0.72, "front", "sit", 4, "crop", 3, "closed", "cup", 2)]},
-    "21": {"people": [(460, 1500, 0.8, "right", "stand", 1, "afro", 5, "flat", "mask", -2)]},
-    "22": {"people": [(640, 1490, 0.8, "right", "stand", 2, "crop", 4, "flat", "bag", 3)]},
+    "21": {"people": [(520, 1500, 0.88, "front", "stand", 1, "afro", 5, "flat", "mask", -1)]},
+    "22": {"people": [(460, 1500, 0.86, "right", "stand", 2, "crop", 4, "flat", "bag", 2)]},
     "23": {"people": [(480, 1490, 0.78, "right", "stand", 3, "wrap", 0, "soft", "mirror", -2)]},
     "24": {"people": [(340, 1520, 0.7, "right", "stand", 0, "crop", 3, "open", "coin", -2), (900, 1540, 0.64, "left", "stand", 4, "braids", 2, "flat", None, 3)]},
-    "25": {"people": [(360, 1500, 0.78, "right", "stand", 2, "afro", 1, "down", None, -2)]},
-    "26": {"people": [(640, 1460, 0.74, "front", "sit", 1, "bun", 0, "soft", "cup", -2)]},
+    "25": {"people": [(430, 1500, 0.86, "right", "stand", 2, "afro", 1, "down", None, -2)]},
+    "26": {"people": [(420, 1500, 0.7, "right", "stand", 1, "bun", 0, "open", "cup", -2), (780, 1500, 0.7, "left", "stand", 4, "crop", 3, "soft", "cup", 2)]},
     "27": {"people": [(400, 1500, 0.66, "front", "stand", 0, "crop", 2, "down", "phone", -2), (860, 1490, 0.64, "left", "stand", 3, "wrap", 0, "soft", None, 2)]},
     "28": {"people": [(400, 1500, 0.66, "right", "stand", 4, "braids", 5, "soft", "book", -3), (840, 1490, 0.66, "left", "stand", 1, "afro", 4, "open", None, 3)]},
 }
+
+
+def chair(draw: ImageDraw.ImageDraw, x: float, y: float, s: float = 1.0) -> None:
+    draw.rectangle([x, y - 120 * s, x + 16 * s, y + 8 * s], fill=CREAM)
+    draw.polygon([(x, y), (x + 130 * s, y - 10 * s), (x + 130 * s, y + 12 * s), (x, y + 18 * s)], fill=CREAM)
+    draw.rectangle([x + 16 * s, y + 12 * s, x + 28 * s, y + 90 * s], fill=CREAM)
+    draw.rectangle([x + 100 * s, y + 6 * s, x + 112 * s, y + 84 * s], fill=CREAM)
+
+
+def big_phone(draw: ImageDraw.ImageDraw, x: float, y: float, s: float = 1.0, struck: bool = False) -> None:
+    draw.rounded_rectangle([x - 70 * s, y - 120 * s, x + 70 * s, y + 120 * s], 16, fill=(28, 22, 18), outline=GOLD, width=4)
+    draw.rectangle([x - 52 * s, y - 96 * s, x + 52 * s, y + 70 * s], fill=(244, 232, 210))
+    for i, width in enumerate((70, 48, 80)):
+        yy = y - 70 * s + i * 36 * s
+        draw.rectangle([x - 40 * s, yy, x - 40 * s + width * s, yy + 16 * s], fill=(120, 72, 48))
+    if struck:
+        draw.line([(x - 48 * s, y - 20 * s), (x + 48 * s, y + 40 * s)], fill=(168, 52, 46), width=6)
+
+
+def door(draw: ImageDraw.ImageDraw, x: float, y: float) -> None:
+    draw.rounded_rectangle([x, y, x + 220, y + 340], 8, fill=(62, 40, 30), outline=GOLD, width=5)
+    draw.rectangle([x + 28, y + 36, x + 192, y + 250], outline=CREAM, width=3)
+    draw.ellipse([x + 168, y + 180, x + 186, y + 198], fill=GOLD)
+
+
+def bus(draw: ImageDraw.ImageDraw, x: float, y: float) -> None:
+    draw.rounded_rectangle([x, y, x + 760, y + 280], 28, fill=(36, 110, 72), outline=CREAM, width=5)
+    for i in range(5):
+        draw.rounded_rectangle([x + 36 + i * 140, y + 36, x + 150 + i * 140, y + 130], 8, fill=(236, 226, 204))
+    draw.rectangle([x + 300, y + 150, x + 460, y + 250], fill=(24, 70, 48))
+    draw.ellipse([x + 80, y + 240, x + 160, y + 320], fill=(28, 22, 18))
+    draw.ellipse([x + 600, y + 240, x + 680, y + 320], fill=(28, 22, 18))
+
+
+def horse(draw: ImageDraw.ImageDraw, x: float, y: float) -> None:
+    draw.polygon(
+        [(x, y + 40), (x + 70, y), (x + 110, y + 10), (x + 90, y + 36), (x + 150, y + 20), (x + 130, y + 70), (x + 40, y + 78)],
+        fill=(232, 214, 180),
+    )
+    draw.line([(x + 70, y), (x + 86, y - 28)], fill=GOLD, width=4)
+
+
+def story_back(base: Image.Image, key: str) -> None:
+    draw = ImageDraw.Draw(base)
+    if key == "18":
+        big_phone(draw, 600, 520, 1.35)
+    elif key == "22":
+        door(draw, 760, 520)
+    elif key == "06":
+        paste_poly(base, blob(780, 980, 90, 160, 6, 20), (28, 18, 16, 180))
+
+
+def story_front(base: Image.Image, key: str) -> None:
+    draw = ImageDraw.Draw(base)
+    if key == "01":
+        chair(draw, 240, 980, 1.7)
+    elif key == "02":
+        big_phone(draw, 600, 430, 1.2, struck=True)
+    elif key == "03":
+        draw.line([(430, 620), (600, 540), (770, 620)], fill=GOLD, width=4)
+        draw.ellipse([586, 526, 614, 554], fill=CREAM, outline=GOLD)
+    elif key == "05":
+        draw.ellipse([560, 860, 640, 920], outline=GOLD, width=6)
+        draw.polygon([(600, 980), (680, 1180), (520, 1180)], outline=CREAM, width=4)
+    elif key == "07":
+        draw.ellipse([820, 280, 980, 440], outline=CREAM, width=4)
+        paste_poly(base, blob(900, 360, 36, 42, 7, 16), SKIN[1] + (255,))
+    elif key == "08":
+        big_phone(draw, 600, 420, 1.15)
+        draw.arc([760, 180, 900, 280], 200, 20, fill=CREAM, width=4)
+    elif key == "10":
+        draw.rounded_rectangle([180, 280, 360, 380], 24, outline=CREAM, width=4)
+        draw.rounded_rectangle([820, 300, 1000, 400], 24, outline=GOLD, width=4)
+        draw.arc([860, 1080, 1080, 1240], 20, 160, fill=(168, 52, 46), width=8)
+    elif key == "11":
+        draw.ellipse([620, 700, 760, 800], fill=SKIN[4] + (255,))
+    elif key == "14":
+        draw.ellipse([760, 640, 980, 860], outline=(168, 52, 46), width=8)
+        draw.ellipse([300, 1100, 390, 1190], fill=(176, 64, 58))
+    elif key == "15":
+        paste_poly(base, [(860, 980), (1080, 1020), (1040, 1280), (820, 1240)], (236, 226, 210, 160))
+    elif key == "16":
+        for i in range(4):
+            draw.line([(180, 700 + i * 40), (360, 680 + i * 40)], fill=CREAM, width=4)
+    elif key == "19":
+        for i in range(7):
+            a = math.tau * i / 7
+            cx, cy = 600 + math.cos(a) * 220, 520 + math.sin(a) * 120
+            draw.ellipse([cx - 16, cy - 16, cx + 16, cy + 16], outline=GOLD, width=3)
+        draw.arc([180, 700, 520, 1100], 200, 40, fill=CREAM, width=10)
+    elif key == "20":
+        horse(draw, 760, 420)
+    elif key == "21":
+        draw.polygon(blob(620, 620, 70, 90, 21, 24), fill=CREAM)
+        draw.ellipse([575, 590, 610, 625], fill=INK)
+        draw.ellipse([640, 590, 675, 625], fill=INK)
+    elif key == "23":
+        draw.rounded_rectangle([760, 480, 1040, 980], 18, outline=GOLD, width=6)
+        paste_poly(base, blob(900, 700, 70, 90, 23, 18), (90, 60, 48, 255))
+    elif key == "24":
+        bus(draw, 220, 560)
+        for i, dx in enumerate((-18, 0, 16)):
+            draw.ellipse([430 + dx - 10, 860 + i * 6, 430 + dx + 14, 880 + i * 6], fill=GOLD, outline=INK)
+        draw.rounded_rectangle([860, 900, 980, 1040], 8, outline=CREAM, width=4)
+    elif key == "25":
+        draw.line([(520, 980), (700, 760)], fill=GOLD, width=8)
+        draw.line([(520, 980), (860, 740)], fill=CREAM, width=8)
+    elif key == "26":
+        draw.ellipse([520, 220, 700, 400], fill=(232, 196, 120))
+    elif key == "27":
+        big_phone(draw, 620, 640, 0.7)
+    elif key == "28":
+        draw.line([(520, 860), (680, 860)], fill=CREAM, width=6)
+        draw.ellipse([560, 820, 640, 900], outline=GOLD, width=4)
+
+
+KEEP = {"cover", "end", "04", "09", "12", "13", "17"}
 
 
 def compose(key: str, spec: dict) -> None:
     plate = Image.open(OLD / f"{key}.jpg").convert("RGB").resize((W, H), Image.Resampling.LANCZOS)
     ground = plate if not spec.get("quiet") else ImageEnhance.Brightness(plate).enhance(1.04)
     base = ground.convert("RGBA")
+    story_back(base, key)
     for index, person in enumerate(spec["people"]):
         cx, foot, scale, facing, pose, skin_i, hair, cloth_i, expr, prop, lean = person
         layer = Image.new("RGBA", (W, H), (0, 0, 0, 0))
@@ -424,6 +555,7 @@ def compose(key: str, spec: dict) -> None:
         base.alpha_composite(layer)
     # The original drawing sits in front of the paper figure wherever they meet.
     base = Image.composite(plate.convert("RGBA"), base, head_guard(motif_mask(plate), spec["people"]))
+    story_front(base, key)
     if spec.get("rain"):
         rain(base)
     if spec.get("fork"):
@@ -437,6 +569,9 @@ def compose(key: str, spec: dict) -> None:
 
 def main() -> None:
     for key, spec in SCENES.items():
+        if key in KEEP:
+            print("keep", key)
+            continue
         compose(key, spec)
 
 

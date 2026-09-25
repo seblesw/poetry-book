@@ -120,17 +120,22 @@ a { color: inherit; }
 .cv-open:hover { background: transparent; color: var(--ink); }
 html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 
-.bk-root { min-height: 100dvh; background: var(--room); }
-.bk-root.is-immersive { position: fixed; inset: 0; z-index: 40; overflow: auto; }
+.bk-root { height: 100dvh; overflow: hidden; background: var(--room); }
+.bk-root.is-immersive { position: fixed; inset: 0; z-index: 40; height: 100dvh; overflow: hidden; }
 .bk-stage {
-  min-height: 100dvh;
+  --dock: 88px;
+  position: relative;
+  height: 100%;
+  min-height: 0;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 18px 16px 150px;
+  padding: 10px 12px 0;
   background:
     radial-gradient(ellipse at 50% 42%, rgba(196, 165, 116, 0.12), transparent 58%),
     var(--room);
 }
+.bk-stage.is-sound { --dock: 212px; }
 .bk-top {
   position: relative;
   z-index: 5;
@@ -168,6 +173,8 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 
 .bk-book {
   width: min(1180px, 100%);
+  height: 100%;
+  min-height: 0;
   margin: 0 auto;
   background: var(--paper);
   box-shadow: var(--shadow);
@@ -176,7 +183,8 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 }
 .bk-story {
   position: relative;
-  aspect-ratio: 4 / 5;
+  flex: none;
+  height: min(30vh, 220px);
   background: var(--room-deep);
   overflow: hidden;
 }
@@ -194,11 +202,23 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
   font-size: 2rem;
 }
 .bk-page {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
   background:
     linear-gradient(180deg, rgba(255, 255, 255, 0.28), transparent 72px),
     var(--paper);
   color: var(--ink);
-  padding: 28px 22px 32px;
+  padding: 16px 18px 12px;
+}
+.bk-page-head { flex: none; }
+.bk-poem-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  scrollbar-color: var(--gold) transparent;
 }
 .bk-kicker {
   margin: 0 0 8px;
@@ -208,15 +228,16 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 }
 .bk-poem-title {
   margin: 0;
-  font-size: clamp(1.8rem, 6vw, 2.7rem);
-  font-weight: 400;
-  line-height: 1.35;
+  font-size: clamp(2rem, 6.4vw, 3rem);
+  font-weight: 700;
+  line-height: 1.3;
 }
 .bk-poem-title:focus { outline: none; }
 .bk-rule { width: 56px; height: 1px; background: var(--gold); border: 0; margin: 16px 0 18px; }
 .bk-poem-text {
-  font-size: clamp(1.08rem, 2.7vw, 1.28rem);
-  line-height: 2;
+  font-size: clamp(1.24rem, 3.2vw, 1.48rem);
+  font-weight: 700;
+  line-height: 1.9;
 }
 .bk-poem-text p { margin: 0 0 1.15em; }
 .bk-line { display: block; white-space: pre-wrap; }
@@ -260,28 +281,38 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 }
 .bk-frame {
   position: relative;
+  flex: 1;
+  min-height: 0;
   width: min(1180px, 100%);
   margin: 0 auto;
+  padding-bottom: var(--dock);
+  display: flex;
+}
+.bk-spread {
+  flex: 1;
+  min-height: 0;
+  height: 100%;
 }
 .bk-frame .bk-book { width: 100%; }
 .bk-side {
   position: absolute;
-  top: 22%;
+  top: 16%;
   z-index: 6;
-  width: 42px;
-  height: 68px;
+  width: 32px;
+  height: 32px;
   padding: 0;
-  border: 0;
+  border: 2px solid #1a0e0a;
   border-radius: 999px;
-  background: rgba(247, 241, 232, 0.94);
-  color: #2b1710;
-  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.28);
+  background: #f7f1e8;
+  color: #1a0e0a;
+  box-shadow: 0 3px 0 #b08958;
   display: grid;
   place-items: center;
 }
-.bk-side svg { width: 22px; height: 22px; }
+.bk-side svg { width: 15px; height: 15px; }
 .bk-side.is-prev { left: 8px; }
 .bk-side.is-next { right: 8px; }
+.bk-side:hover { background: #b08958; color: #1a0e0a; }
 .bk-side:disabled { opacity: 0.32; }
 .bk-dock {
   position: fixed;
@@ -368,13 +399,40 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 .bk-btn:disabled, .bk-btn[aria-disabled="true"] { opacity: 0.45; }
 .bk-btn svg { width: 18px; height: 18px; display: block; }
 .bk-btn-label { display: none; }
+.bk-pdf { position: relative; }
+.bk-pdf-menu {
+  position: absolute;
+  left: 50%;
+  bottom: calc(100% + 8px);
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  padding: 6px;
+  background: var(--paper-2);
+  color: var(--ink);
+  box-shadow: var(--shadow);
+  z-index: 2;
+}
+.bk-pdf-menu button {
+  border: 1px solid var(--line);
+  background: transparent;
+  color: inherit;
+  min-height: 36px;
+  padding: 0 12px;
+  font-weight: 700;
+}
+.bk-pdf-menu button:hover { border-color: var(--gold); }
 .bk-note {
-  width: min(1180px, 100%);
-  margin: 10px auto 0;
-  min-height: 1.4em;
+  position: absolute;
+  left: 12px;
+  right: 12px;
+  bottom: calc(var(--dock) - 8px);
+  margin: 0;
+  min-height: 0;
   text-align: center;
   color: #f7f1e8;
   font-size: 0.95rem;
+  pointer-events: none;
 }
 .bk-note.is-error { color: #f0c2b8; }
 
@@ -463,18 +521,18 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
 }
 
 @media (min-width: 960px) {
-  .cv-jacket { grid-template-columns: 1.05fr 0.95fr; }
+  .cv-jacket { grid-template-columns: 1fr 1fr; }
   .cv-art { min-height: 100%; }
   .cv-copy { padding: 56px 52px; }
-  .bk-stage { padding: 22px 28px 96px; justify-content: center; }
+  .bk-stage { padding: 12px 28px 0; }
   .bk-book {
-    height: min(760px, calc(100dvh - 150px));
-    min-height: 520px;
+    height: 100%;
+    min-height: 0;
     display: grid;
-    grid-template-columns: minmax(0, 1.08fr) 18px minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr) 16px minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
   }
-  .bk-story { aspect-ratio: auto; height: 100%; margin: 16px 0 16px 16px; }
+  .bk-story { height: 100%; max-height: none; align-self: stretch; margin: 0; }
   .bk-spine {
     display: block;
     background: linear-gradient(
@@ -491,21 +549,20 @@ html[data-theme="dark"] .cv-open:hover { color: var(--ink); }
   }
   .bk-page {
     min-height: 0;
-    overflow: auto;
-    padding: 36px 40px 28px;
-    scrollbar-color: var(--gold) transparent;
+    overflow: hidden;
+    padding: 28px 36px 18px;
   }
-  .bk-poem-text { font-size: clamp(1.02rem, 1.15vw, 1.22rem); }
+  .bk-poem-text { font-size: clamp(1.22rem, 1.35vw, 1.46rem); }
   .bk-scroll-hint { display: none; }
   .bk-btn-label { display: inline; }
   .bk-side {
     top: 50%;
-    width: 52px;
-    height: 88px;
+    width: 36px;
+    height: 36px;
     transform: translateY(-50%);
   }
-  .bk-side.is-prev { left: -8px; }
-  .bk-side.is-next { right: -8px; }
+  .bk-side.is-prev { left: -6px; }
+  .bk-side.is-next { right: -6px; }
   .bk-overlay.is-toc { justify-items: end; background: rgba(18, 10, 7, 0.28); }
   .bk-dialog.is-toc { width: min(440px, 92vw); height: 100%; border-inline-start: 1px solid var(--line); }
   .bk-overlay.is-search, .bk-overlay.is-share { place-items: center; }

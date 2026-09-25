@@ -254,12 +254,12 @@ export function PoetryBook({ slug }: { slug: string }) {
     setShare({ title: text, url });
   }
 
-  async function onDownload() {
+  async function onDownload(tone: "light" | "dark") {
     setPdfStatus("preparing");
     setNoteError(false);
-    setNote("መጽሐፉ እየተዘጋጀ ነው…");
+    setNote(tone === "dark" ? "የጨለማ መጽሐፉ እየተዘጋጀ ነው…" : "የብርሃን መጽሐፉ እየተዘጋጀ ነው…");
     try {
-      await downloadPoetryPdf();
+      await downloadPoetryPdf(tone);
       setPdfStatus("ready");
       setNote("የግጥም መጽሐፍዎ ዝግጁ ነው።");
       window.setTimeout(() => setPdfStatus("idle"), 2500);
@@ -283,7 +283,7 @@ export function PoetryBook({ slug }: { slug: string }) {
   if (!poem && !ended) return null;
 
   return (
-    <div className={`bk-stage${opening ? " is-opening" : ""}`}>
+    <div className={`bk-stage${opening ? " is-opening" : ""}${soundOn ? " is-sound" : ""}`}>
       <header className="bk-top">
         <div className="bk-brand">
           <Link
@@ -320,7 +320,7 @@ export function PoetryBook({ slug }: { slug: string }) {
             onContents={() => setTocOpen(true)}
             onShare={() => void onShare()}
             pdfStatus={pdfStatus}
-            onDownload={() => void onDownload()}
+            onDownload={(tone) => void onDownload(tone)}
           />
         ) : poem ? (
           <BookSpread poem={poem} priority />
@@ -357,7 +357,7 @@ export function PoetryBook({ slug }: { slug: string }) {
         onTrack={chooseTrack}
         onShare={() => void onShare()}
         pdfStatus={pdfStatus}
-        onDownload={() => void onDownload()}
+        onDownload={(tone) => void onDownload(tone)}
       />
       <p className={`bk-note${noteError ? " is-error" : ""}`} aria-live="polite">
         {note}

@@ -16,13 +16,17 @@ export function PoemPage({ poem }: { poem: Poem }) {
 
   return (
     <article className="bk-page" ref={pageRef} aria-labelledby={`poem-${poem.id}-title`}>
-      <p className="bk-kicker">{String(poem.number).padStart(2, "0")}</p>
-      <h1 id={`poem-${poem.id}-title`} className="bk-poem-title" tabIndex={-1} ref={titleRef}>
-        {poem.title}
-      </h1>
-      <hr className="bk-rule" />
-      <PoemText text={poem.text} />
-      {long ? <p className="bk-scroll-hint">ግጥሙ ከገጹ ረዘም ካለ ያንሸራትቱ።</p> : null}
+      <div className="bk-page-head">
+        <p className="bk-kicker">{String(poem.number).padStart(2, "0")}</p>
+        <h1 id={`poem-${poem.id}-title`} className="bk-poem-title" tabIndex={-1} ref={titleRef}>
+          {poem.title}
+        </h1>
+        <hr className="bk-rule" />
+      </div>
+      <div className="bk-poem-scroll">
+        <PoemText text={poem.text} />
+        {long ? <p className="bk-scroll-hint">ግጥሙ ከገጹ ረዘም ካለ ያንሸራትቱ።</p> : null}
+      </div>
     </article>
   );
 }

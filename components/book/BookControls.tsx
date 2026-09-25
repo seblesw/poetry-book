@@ -47,7 +47,7 @@ export function BookControls({
   onTrack: (id: string) => void;
   onShare: () => void;
   pdfStatus: PdfStatus;
-  onDownload: () => void;
+  onDownload: (tone: "light" | "dark") => void;
 }) {
   return (
     <div className="bk-dock">

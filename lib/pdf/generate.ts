@@ -41,19 +41,53 @@ type Fonts = {
 
 type Run = { text: string; font: PDFFont };
 
-let cached: Promise<Uint8Array> | null = null;
+export type PdfTone = "light" | "dark";
 
-export function getPoetryBookPdf(): Promise<Uint8Array> {
-  if (!cached) {
-    cached = build().catch((error: unknown) => {
-      cached = null;
-      throw error;
-    });
+type Ink = {
+  paper: ReturnType<typeof rgb>;
+  ink: ReturnType<typeof rgb>;
+  muted: ReturnType<typeof rgb>;
+  cream: ReturnType<typeof rgb>;
+  ground: ReturnType<typeof rgb>;
+  spine: ReturnType<typeof rgb>;
+};
+
+function toneOf(tone: PdfTone): Ink {
+  if (tone === "dark") {
+    return {
+      paper: rgb(0.11, 0.07, 0.05),
+      ink: rgb(0.97, 0.94, 0.9),
+      muted: rgb(0.78, 0.7, 0.62),
+      cream: rgb(0.97, 0.94, 0.9),
+      ground: rgb(0.08, 0.05, 0.03),
+      spine: rgb(0.24, 0.15, 0.1),
+    };
   }
-  return cached;
+  return {
+    paper: PAPER,
+    ink: INK,
+    muted: MUTED,
+    cream: CREAM,
+    ground: DARK,
+    spine: rgb(0.16, 0.09, 0.06),
+  };
 }
 
-async function build(): Promise<Uint8Array> {
+const cached = new Map<PdfTone, Promise<Uint8Array>>();
+
+export function getPoetryBookPdf(tone: PdfTone = "light"): Promise<Uint8Array> {
+  const hit = cached.get(tone);
+  if (hit) return hit;
+  const job = build(tone).catch((error: unknown) => {
+    cached.delete(tone);
+    throw error;
+  });
+  cached.set(tone, job);
+  return job;
+}
+
+async function build(tone: PdfTone): Promise<Uint8Array> {
+  const ink = toneOf(tone);
   const pdf = await PDFDocument.create();
   pdf.registerFontkit(fontkit);
 
@@ -85,16 +119,15 @@ async function build(): Promise<Uint8Array> {
   const chunks = poems.map((poem) => chunkPoem(poem, fonts));
   const starts: number[] = [];
   const poemPdfIndex = new Map<string, number>();
-  let cursor = 3;
+  let cursor = 2;
   chunks.forEach((pages, index) => {
-    starts.push(cursor - 3);
+    starts.push(cursor - 2);
     poemPdfIndex.set(poems[index].id, cursor);
     cursor += pages.length;
   });
   const total = cursor + 1;
 
   const cover = pdf.addPage([PAGE_W, PAGE_H]);
-  const titlePage = pdf.addPage([PAGE_W, PAGE_H]);
   const tocPage = pdf.addPage([PAGE_W, PAGE_H]);
   const poemPages: PDFPage[] = [];
   chunks.forEach((pages) => {
@@ -102,24 +135,22 @@ async function build(): Promise<Uint8Array> {
   });
   const endPage = pdf.addPage([PAGE_W, PAGE_H]);
 
-  drawCover(cover, await plate(book.coverImage), fonts);
-  drawTitlePage(titlePage, fonts, 2);
-  const tocLinks = drawToc(tocPage, fonts, poemPdfIndex, poemPages, starts, 3);
+  drawCover(cover, await plate(book.coverImage), fonts, ink);
+  const tocLinks = drawToc(tocPage, fonts, poemPdfIndex, poemPages, starts, 2, ink);
   addLinks(pdf, tocPage, tocLinks);
 
   let drawn = 0;
   for (let i = 0; i < poems.length; i += 1) {
     const image = await plate(poems[i].image);
     chunks[i].forEach((lines, part) => {
-      drawPoemSpread(poemPages[drawn], poems[i], lines, part === 0, image, fonts, poemPdfIndex.get(poems[i].id)! + part + 1);
+      drawPoemSpread(poemPages[drawn], poems[i], lines, part === 0, image, fonts, poemPdfIndex.get(poems[i].id)! + part + 1, ink);
       drawn += 1;
     });
   }
-  drawEnd(endPage, await plate(book.endImage), fonts, total);
+  drawEnd(endPage, await plate(book.endImage), fonts, total, ink);
 
   addOutlines(pdf, [
     { title: "ሽፋን", page: cover },
-    { title: "ርዕስ", page: titlePage },
     { title: "ማውጫ", page: tocPage },
     ...poems.map((poem, index) => ({
       title: `${String(poem.number).padStart(2, "0")}  ${poem.title}`,
@@ -240,13 +271,13 @@ function headerHeight(title: string, fonts: Fonts) {
   return wrap(title, fonts, TITLE, TEXT_W).length * TITLE_LEAD + 26;
 }
 
-function paintImage(page: PDFPage, image: PDFImage | null, box: { x: number; y: number; w: number; h: number }, fallback: string, fonts: Fonts) {
+function paintImage(page: PDFPage, image: PDFImage | null, box: { x: number; y: number; w: number; h: number }, fallback: string, fonts: Fonts, ink: Ink) {
+  page.drawRectangle({ x: box.x, y: box.y, width: box.w, height: box.h, color: ink.ground });
   if (!image) {
-    page.drawRectangle({ x: box.x, y: box.y, width: box.w, height: box.h, color: DARK });
-    drawRuns(page, fallback, box.x + 28, box.y + box.h / 2, 28, CREAM, fonts);
+    drawRuns(page, fallback, box.x + 28, box.y + box.h / 2, 28, ink.cream, fonts);
     return;
   }
-  const scale = Math.max(box.w / image.width, box.h / image.height);
+  const scale = Math.min(box.w / image.width, box.h / image.height);
   const w = image.width * scale;
   const h = image.height * scale;
   page.drawImage(image, {
@@ -257,59 +288,36 @@ function paintImage(page: PDFPage, image: PDFImage | null, box: { x: number; y: 
   });
 }
 
-function maskSpread(page: PDFPage) {
-  page.drawRectangle({ x: 0, y: 0, width: 18, height: PAGE_H, color: PAPER });
-  page.drawRectangle({ x: 0, y: 0, width: HALF, height: 18, color: PAPER });
-  page.drawRectangle({ x: 0, y: PAGE_H - 18, width: HALF, height: 18, color: PAPER });
-  page.drawRectangle({ x: HALF - 11, y: 0, width: PAGE_W - HALF + 11, height: PAGE_H, color: PAPER });
-  page.drawRectangle({ x: HALF - 9, y: 0, width: 18, height: PAGE_H, color: rgb(0.16, 0.09, 0.06) });
+function maskSpread(page: PDFPage, ink: Ink) {
+  page.drawRectangle({ x: 0, y: 0, width: 14, height: PAGE_H, color: ink.paper });
+  page.drawRectangle({ x: 0, y: 0, width: HALF, height: 14, color: ink.paper });
+  page.drawRectangle({ x: 0, y: PAGE_H - 14, width: HALF, height: 14, color: ink.paper });
+  page.drawRectangle({ x: HALF - 8, y: 0, width: PAGE_W - HALF + 8, height: PAGE_H, color: ink.paper });
+  page.drawRectangle({ x: HALF - 9, y: 0, width: 18, height: PAGE_H, color: ink.spine });
   page.drawRectangle({ x: HALF - 0.5, y: 0, width: 1, height: PAGE_H, color: GOLD });
 }
 
-function drawCover(page: PDFPage, image: PDFImage | null, fonts: Fonts) {
-  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: DARK });
-  paintImage(page, image, { x: 0, y: 0, w: HALF, h: PAGE_H }, "", fonts);
-  page.drawRectangle({ x: HALF - 8, y: 0, width: PAGE_W - HALF + 8, height: PAGE_H, color: DARK });
+function drawCover(page: PDFPage, image: PDFImage | null, fonts: Fonts, ink: Ink) {
+  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: ink.paper });
+  paintImage(page, image, { x: 0, y: 0, w: HALF, h: PAGE_H }, "", fonts, ink);
+  page.drawRectangle({ x: HALF - 8, y: 0, width: PAGE_W - HALF + 8, height: PAGE_H, color: ink.paper });
   page.drawRectangle({ x: HALF - 1, y: 48, width: 1, height: PAGE_H - 96, color: GOLD });
 
   const x = HALF + 48;
   drawRuns(page, `${book.series}  ·  ${book.issue}`, x, 430, 12, GOLD, fonts);
   let y = 390;
   for (const line of wrap(book.title, fonts, 36, HALF - 96)) {
-    drawRuns(page, line, x, y, 36, CREAM, fonts);
+    drawRuns(page, line, x, y, 36, ink.ink, fonts);
     y -= 46;
   }
-  drawRuns(page, "ሃያ ስምንት አጫጭር ግጥሞች", x, y - 8, 13, rgb(0.86, 0.78, 0.68), fonts);
+  drawRuns(page, "ሃያ ስምንት አጫጭር ግጥሞች", x, y - 8, 13, ink.muted, fonts);
   page.drawRectangle({ x, y: 176, width: 64, height: 1.25, color: GOLD });
   let creditY = 150;
   for (const line of wrap(book.credit, fonts, 12, HALF - 96)) {
-    drawRuns(page, line, x, creditY, 12, rgb(0.9, 0.84, 0.74), fonts);
+    drawRuns(page, line, x, creditY, 12, ink.ink, fonts);
     creditY -= 18;
   }
   drawRuns(page, "ዲጂታል የግጥም መጽሐፍ", x, 88, 11, GOLD, fonts);
-}
-
-function drawTitlePage(page: PDFPage, fonts: Fonts, pageNo: number) {
-  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: PAPER });
-  page.drawRectangle({ x: 36, y: 36, width: PAGE_W - 72, height: PAGE_H - 72, borderColor: GOLD, borderWidth: 0.8 });
-  const title = wrap(book.title, fonts, 34, 520);
-  let y = 360;
-  for (const line of title) {
-    const w = widthOf(line, fonts, 34);
-    drawRuns(page, line, (PAGE_W - w) / 2, y, 34, INK, fonts);
-    y -= 44;
-  }
-  const series = `${book.series}  ·  ${book.issue}`;
-  drawRuns(page, series, (PAGE_W - widthOf(series, fonts, 13)) / 2, y - 6, 13, MUTED, fonts);
-  const creditLines = wrap(book.credit, fonts, 13, 560);
-  let creditY = y - 48;
-  for (const line of creditLines) {
-    drawRuns(page, line, (PAGE_W - widthOf(line, fonts, 13)) / 2, creditY, 13, INK, fonts);
-    creditY -= 22;
-  }
-  const sub = "ሃያ ስምንት አጫጭር ግጥሞች";
-  drawRuns(page, sub, (PAGE_W - widthOf(sub, fonts, 12)) / 2, 150, 12, MUTED, fonts);
-  footer(page, fonts, pageNo);
 }
 
 function drawToc(
@@ -319,9 +327,10 @@ function drawToc(
   poemPages: PDFPage[],
   starts: number[],
   pageNo: number,
+  ink: Ink,
 ) {
-  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: PAPER });
-  drawRuns(page, "ማውጫ", 48, PAGE_H - 58, 22, INK, fonts);
+  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: ink.paper });
+  drawRuns(page, "ማውጫ", 48, PAGE_H - 58, 22, ink.ink, fonts);
   page.drawRectangle({ x: 48, y: PAGE_H - 74, width: 56, height: 1.2, color: GOLD });
 
   const links: { rect: [number, number, number, number]; page: PDFPage }[] = [];
@@ -333,12 +342,12 @@ function drawToc(
     const label = String(poem.number).padStart(2, "0");
     drawRuns(page, label, x, y, 11, GOLD, fonts);
     const title = fit(poem.title, fonts, 12, 250);
-    drawRuns(page, title, x + 36, y, 12, INK, fonts);
+    drawRuns(page, title, x + 36, y, 12, ink.ink, fonts);
     const destLabel = String(poemPdfIndex.get(poem.id)! + 1);
-    drawRuns(page, destLabel, x + 320, y, 10, MUTED, fonts);
+    drawRuns(page, destLabel, x + 320, y, 10, ink.muted, fonts);
     links.push({ rect: [x, y - 6, x + 350, y + 16], page: poemPages[starts[index]] });
   });
-  footer(page, fonts, pageNo);
+  footer(page, fonts, pageNo, "center", ink);
   return links;
 }
 
@@ -350,22 +359,23 @@ function drawPoemSpread(
   image: PDFImage | null,
   fonts: Fonts,
   pageNo: number,
+  ink: Ink,
 ) {
-  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: PAPER });
-  paintImage(page, image, { x: 0, y: 0, w: HALF, h: PAGE_H }, String(poem.number).padStart(2, "0"), fonts);
-  maskSpread(page);
+  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: ink.paper });
+  paintImage(page, image, { x: 0, y: 0, w: HALF, h: PAGE_H }, String(poem.number).padStart(2, "0"), fonts, ink);
+  maskSpread(page, ink);
 
   let y = PAGE_H - 50;
   if (first) {
     for (const line of wrap(poem.title, fonts, TITLE, TEXT_W)) {
-      drawRuns(page, line, TEXT_X, y, TITLE, INK, fonts);
+      drawRuns(page, line, TEXT_X, y, TITLE, ink.ink, fonts);
       y -= TITLE_LEAD;
     }
     y -= 6;
     page.drawRectangle({ x: TEXT_X, y: y + 12, width: 64, height: 1.15, color: GOLD });
     y -= 20;
   } else {
-    drawRuns(page, fit(poem.title, fonts, 11, TEXT_W - 70), TEXT_X, y, 11, MUTED, fonts);
+    drawRuns(page, fit(poem.title, fonts, 11, TEXT_W - 70), TEXT_X, y, 11, ink.muted, fonts);
     drawRuns(page, "ቀጣይ", PAGE_W - 78, y, 10, GOLD, fonts);
     y -= 36;
   }
@@ -375,32 +385,32 @@ function drawPoemSpread(
       y -= BLANK;
       continue;
     }
-    drawRuns(page, line, TEXT_X, y, BODY, INK, fonts);
+    drawRuns(page, line, TEXT_X, y, BODY, ink.ink, fonts);
     y -= LEAD;
   }
 
   const mark = String(poem.number).padStart(2, "0");
-  drawRuns(page, mark, PAGE_W - 58, 32, 11, MUTED, fonts);
-  footer(page, fonts, pageNo, "spread");
+  drawRuns(page, mark, PAGE_W - 58, 32, 11, ink.muted, fonts);
+  footer(page, fonts, pageNo, "spread", ink);
 }
 
-function drawEnd(page: PDFPage, image: PDFImage | null, fonts: Fonts, pageNo: number) {
-  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: PAPER });
-  paintImage(page, image, { x: 0, y: 0, w: HALF, h: PAGE_H }, "", fonts);
-  maskSpread(page);
-  drawRuns(page, "መጨረሻ", TEXT_X, 360, 32, INK, fonts);
+function drawEnd(page: PDFPage, image: PDFImage | null, fonts: Fonts, pageNo: number, ink: Ink) {
+  page.drawRectangle({ x: 0, y: 0, width: PAGE_W, height: PAGE_H, color: ink.paper });
+  paintImage(page, image, { x: 0, y: 0, w: HALF, h: PAGE_H }, "", fonts, ink);
+  maskSpread(page, ink);
+  drawRuns(page, "መጨረሻ", TEXT_X, 360, 32, ink.ink, fonts);
   page.drawRectangle({ x: TEXT_X, y: 336, width: 64, height: 1.15, color: GOLD });
-  drawRuns(page, book.title, TEXT_X, 300, 16, INK, fonts);
-  drawRuns(page, book.series, TEXT_X, 274, 12, MUTED, fonts);
-  drawRuns(page, "ሃያ ስምንት ግጥሞች", TEXT_X, 248, 12, MUTED, fonts);
-  footer(page, fonts, pageNo, "spread");
+  drawRuns(page, book.title, TEXT_X, 300, 16, ink.ink, fonts);
+  drawRuns(page, book.series, TEXT_X, 274, 12, ink.muted, fonts);
+  drawRuns(page, "ሃያ ስምንት ግጥሞች", TEXT_X, 248, 12, ink.muted, fonts);
+  footer(page, fonts, pageNo, "spread", ink);
 }
 
-function footer(page: PDFPage, fonts: Fonts, pageNo: number, align: "center" | "spread" = "center") {
+function footer(page: PDFPage, fonts: Fonts, pageNo: number, align: "center" | "spread" = "center", ink: Ink = toneOf("light")) {
   const label = String(pageNo);
   const w = widthOf(label, fonts, 9);
   const x = align === "spread" ? HALF + (HALF - w) / 2 : (PAGE_W - w) / 2;
-  drawRuns(page, label, x, 16, 9, MUTED, fonts);
+  drawRuns(page, label, x, 16, 9, ink.muted, fonts);
 }
 
 function addLinks(

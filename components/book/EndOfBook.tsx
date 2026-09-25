@@ -15,7 +15,7 @@ export function EndOfBook({
   onContents: () => void;
   onShare: () => void;
   pdfStatus: PdfStatus;
-  onDownload: () => void;
+  onDownload: (tone: "light" | "dark") => void;
 }) {
   return (
     <div className="bk-book">
