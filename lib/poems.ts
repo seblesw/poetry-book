@@ -26,6 +26,7 @@ export const poems: Poem[] = data.poems;
 export const poemSource = data.source;
 export const poemCount = poems.length;
 export const END_SLUG = "end";
+export const COVER_SLUG = "cover";
 
 if (poemCount !== 28) {
   throw new Error(`Expected 28 poems, found ${poemCount}.`);
@@ -42,7 +43,7 @@ export function neighbors(slug: string): { prev: string | null; next: string | n
   const poem = getPoem(slug);
   if (!poem) return { prev: null, next: null };
   return {
-    prev: poem.number > 1 ? String(poem.number - 1) : null,
+    prev: poem.number > 1 ? String(poem.number - 1) : COVER_SLUG,
     next: poem.number < poemCount ? String(poem.number + 1) : END_SLUG,
   };
 }

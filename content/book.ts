@@ -3,7 +3,9 @@ export const book = {
   series: "የግጥም መድብል",
   issue: "፩",
   language: "am" as const,
-  description: "ሃያ ስምንት አጫጭር የአማርኛ ግጥሞች። የግጥም መድብል ዲጂታል መጽሐፍ።",
+  poet: "ኪዳነ ማርያም ዘውዱ",
+  credit: "በ ገጣሚ ኪዳነ ማርያም ዘውዱ የተዘጋጀ",
+  description: "ሃያ ስምንት አጫጭር የአማርኛ ግጥሞች። በ ገጣሚ ኪዳነ ማርያም ዘውዱ የተዘጋጀ።",
   keywords: [
     "አጫጭር ግጥሞች",
     "የግጥም መድብል",
@@ -13,11 +15,11 @@ export const book = {
   ],
   pdfFileName: "Achachir-Gitmoch-Digital-Poetry-Book.pdf",
   coverImage: "/plates/cover.jpg",
-  coverAlt: "የመጽሐፉ ሽፋን፤ ክፍት መጽሐፍ የሚመስል የቡና ቀለም ሥዕል።",
+  coverAlt: "ነጭ ነጠላ ለብሶ መጽሐፍ ይዞ ከምልክቱ አጠገብ የቆመ ሰው።",
   endImage: "/plates/end.jpg",
-  endAlt: "የመጽሐፉ መጨረሻ፤ በቡና ቀለም ውስጥ አንድ የወርቅ ነጥብ።",
-  /** Optional ambient bed. Absent until a real audio file is added. */
-  ambient: undefined as string | undefined,
+  endAlt: "መጽሐፉን ይዞ በጸጥታ የቆመ ሰው።",
+  /** Default reading music. The player can switch among the classical set. */
+  ambient: "/audio/tizita.mp3",
 };
 
 export function siteUrl() {

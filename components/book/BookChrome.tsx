@@ -7,7 +7,6 @@ type Chrome = {
   toggleFullscreen: () => void;
   exitFullscreen: () => void;
 };
-
 const BookChromeContext = createContext<Chrome | null>(null);
 
 export function useBookChrome() {
@@ -15,12 +14,10 @@ export function useBookChrome() {
   if (!value) throw new Error("Book chrome is missing");
   return value;
 }
-
 export function BookChrome({ children }: { children: React.ReactNode }) {
   const ref = useRef<HTMLDivElement>(null);
   const [nativeFs, setNativeFs] = useState(false);
   const [immersive, setImmersive] = useState(false);
-
   useEffect(() => {
     const onChange = () => setNativeFs(document.fullscreenElement === ref.current);
     document.addEventListener("fullscreenchange", onChange);

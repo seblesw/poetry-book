@@ -235,14 +235,24 @@ PLATES["20"] = svg("#241610", "#6A4030", "#A06840", "#F4E0C8", '''
   <path d="M400 640 C360 540 390 470 340 400" stroke="#E8C9A4" stroke-width="3" fill="none" opacity="0.45"/>
 ''', "20")
 
-PLATES["21"] = svg("#181614", "#4A4440", "#6A625C", "#E8E0D6", '''
-  <rect x="250" y="340" width="280" height="200" rx="16" fill="#1A1614"/>
-  <circle cx="390" cy="440" r="62" fill="#2A2624"/>
-  <circle cx="390" cy="440" r="34" fill="#C8B8A4" opacity="0.85"/>
-  <circle cx="390" cy="440" r="14" fill="#1A0E0A"/>
-  <rect x="470" y="360" width="40" height="28" fill="#C4A574"/>
-  <circle cx="640" cy="760" r="40" fill="#E8E0D6" opacity="0.8"/>
-  <path d="M610 820 C630 900 700 940 760 900" stroke="#E8E0D6" stroke-width="22" fill="none" stroke-linecap="round" opacity="0.75"/>
+PLATES["21"] = svg("#161311", "#3A302C", "#5C4E46", "#F4EBE3", '''
+  <ellipse cx="390" cy="560" rx="168" ry="210" fill="#2A211C"/>
+  <ellipse cx="390" cy="545" rx="132" ry="168" fill="#4A342C"/>
+  <path d="M330 500 Q360 478 392 502" stroke="#1A0E0A" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M430 498 Q462 476 494 504" stroke="#1A0E0A" stroke-width="7" fill="none" stroke-linecap="round"/>
+  <path d="M360 640 Q390 612 430 646" stroke="#1A0E0A" stroke-width="6" fill="none" stroke-linecap="round"/>
+  <ellipse cx="530" cy="640" rx="148" ry="186" fill="#F7F1E8"/>
+  <ellipse cx="478" cy="600" rx="22" ry="28" fill="#1A120E"/>
+  <ellipse cx="582" cy="600" rx="22" ry="28" fill="#1A120E"/>
+  <path d="M478 700 Q530 758 582 700" stroke="#1A120E" stroke-width="8" fill="none" stroke-linecap="round"/>
+  <path d="M530 820 C548 900 590 980 640 1040" stroke="#C4A574" stroke-width="26" fill="none" stroke-linecap="round"/>
+  <circle cx="655" cy="1055" r="22" fill="#E7C7A1"/>
+  <g transform="translate(150 250)">
+    <rect width="168" height="112" rx="14" fill="#1A1614"/>
+    <circle cx="84" cy="56" r="30" fill="#D9CBBA"/>
+    <circle cx="84" cy="56" r="13" fill="#120C09"/>
+    <rect x="128" y="18" width="28" height="18" rx="3" fill="#C4A574"/>
+  </g>
 ''', "21")
 
 PLATES["22"] = svg("#1A1814", "#8A7A62", "#C4B498", "#F6EFE4", '''
@@ -261,19 +271,29 @@ PLATES["23"] = svg("#1C1614", "#5A4840", "#8A7060", "#F4E8DC", '''
   <circle cx="630" cy="700" r="8" fill="#C4A574"/>
 ''', "23")
 
-PLATES["24"] = svg("#221814", "#6A5040", "#8A6848", "#F0DCC8", '''
-  <g fill="#F7F1E8">
-    <rect x="140" y="360" width="16" height="280" opacity="0.35"/>
-    <rect x="190" y="320" width="16" height="340" opacity="0.5"/>
-    <rect x="240" y="390" width="16" height="250" opacity="0.3"/>
-    <rect x="300" y="300" width="18" height="380" opacity="0.7"/>
-    <rect x="360" y="340" width="16" height="300" opacity="0.45"/>
-    <rect x="430" y="280" width="18" height="400" opacity="0.8"/>
-    <rect x="500" y="360" width="16" height="280" opacity="0.4"/>
-    <rect x="560" y="320" width="16" height="340" opacity="0.55"/>
+PLATES["24"] = svg("#243038", "#3E5348", "#1C2428", "#D5E4EA", '''
+  <path d="M0 430 L180 300 L420 250 L700 310 L900 390 L900 520 L0 560 Z" fill="#2C3840" opacity="0.55"/>
+  <rect x="0" y="860" width="900" height="340" fill="#14181C"/>
+  <rect x="70" y="820" width="760" height="18" fill="#C4A574" opacity="0.35"/>
+  <g>
+    <rect x="110" y="390" width="680" height="300" rx="46" fill="#3E6B57" stroke="#F3E6D0" stroke-width="8"/>
+    <rect x="110" y="560" width="680" height="16" fill="#F3E6D0" opacity="0.35"/>
+    <rect x="168" y="440" width="78" height="72" rx="6" fill="#D7E6EC"/>
+    <rect x="268" y="440" width="78" height="72" rx="6" fill="#D7E6EC"/>
+    <rect x="368" y="440" width="78" height="72" rx="6" fill="#D7E6EC"/>
+    <rect x="468" y="440" width="78" height="72" rx="6" fill="#D7E6EC"/>
+    <rect x="568" y="440" width="78" height="72" rx="6" fill="#D7E6EC"/>
+    <rect x="668" y="440" width="78" height="72" rx="6" fill="#D7E6EC"/>
+    <circle cx="250" cy="700" r="52" fill="#161412"/>
+    <circle cx="250" cy="700" r="18" fill="#C4A574"/>
+    <circle cx="650" cy="700" r="52" fill="#161412"/>
+    <circle cx="650" cy="700" r="18" fill="#C4A574"/>
   </g>
-  <rect x="600" y="700" width="140" height="150" rx="10" fill="#1A0E0A" opacity="0.8"/>
-  <rect x="620" y="760" width="100" height="70" fill="#C4A574" opacity="0.85"/>
+  <circle cx="760" cy="930" r="18" fill="#E7C7A1"/>
+  <circle cx="808" cy="968" r="13" fill="#C4A574"/>
+  <circle cx="742" cy="990" r="11" fill="#F7F1E8"/>
+  <path d="M700 1040 H860 L840 1140 H720 Z" fill="#2B1710"/>
+  <path d="M700 1040 L780 1004 L860 1040" fill="#1A0E0A"/>
 ''', "24")
 
 PLATES["25"] = svg("#1A1810", "#5A6840", "#8A8850", "#F0E6C8", '''

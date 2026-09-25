@@ -18,6 +18,10 @@ export default function HomePage() {
     numberOfPages: poemCount,
     description: book.description,
     url: siteUrl(),
+    author: {
+      "@type": "Person",
+      name: book.poet,
+    },
     isPartOf: {
       "@type": "CreativeWorkSeries",
       name: book.series,

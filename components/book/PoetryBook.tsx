@@ -4,8 +4,10 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { book } from "@/content/book";
-import { audioFor, END_SLUG, getPoem, neighbors, poemCount } from "@/lib/poems";
+import { defaultTrackId, tracks } from "@/content/music";
+import { COVER_SLUG, END_SLUG, getPoem, neighbors, poemCount } from "@/lib/poems";
 import { BookControls } from "@/components/book/BookControls";
+import { IconNext, IconPrev } from "@/components/book/icons";
 import { BookSpread } from "@/components/book/BookSpread";
 import { downloadPoetryPdf, type PdfStatus } from "@/components/book/DownloadPdf";
 import { EndOfBook } from "@/components/book/EndOfBook";
@@ -18,6 +20,8 @@ import { useSwipe } from "@/components/book/useSwipe";
 
 const THEME_KEY = "poetry-theme";
 const SOUND_KEY = "poetry-sound";
+const TRACK_KEY = "poetry-track";
+const VOLUME_KEY = "poetry-volume";
 
 export function PoetryBook({ slug }: { slug: string }) {
   const router = useRouter();
@@ -32,11 +36,15 @@ export function PoetryBook({ slug }: { slug: string }) {
   const [share, setShare] = useState<{ title: string; url: string } | null>(null);
   const [dark, setDark] = useState(false);
   const [soundOn, setSoundOn] = useState(false);
+  const [paused, setPaused] = useState(false);
+  const [volume, setVolume] = useState(0.55);
+  const [trackId, setTrackId] = useState(defaultTrackId);
   const [note, setNote] = useState("");
   const [noteError, setNoteError] = useState(false);
   const [pdfStatus, setPdfStatus] = useState<PdfStatus>("idle");
   const audioRef = useRef<HTMLAudioElement>(null);
-  const audioSrc = audioFor(poem);
+  const track = tracks.find((item) => item.id === trackId) ?? tracks[0];
+  const audioSrc = track.src;
 
   useEffect(() => {
     const stored = window.sessionStorage.getItem("poetry-dir");
@@ -54,6 +62,11 @@ export function PoetryBook({ slug }: { slug: string }) {
     const theme = document.documentElement.dataset.theme === "dark";
     setDark(theme);
     setSoundOn(window.localStorage.getItem(SOUND_KEY) === "on");
+    const storedTrack = window.localStorage.getItem(TRACK_KEY);
+    if (storedTrack && tracks.some((item) => item.id === storedTrack)) setTrackId(storedTrack);
+    const rawVolume = window.localStorage.getItem(VOLUME_KEY);
+    const storedVolume = rawVolume === null ? Number.NaN : Number(rawVolume);
+    if (Number.isFinite(storedVolume)) setVolume(Math.min(1, Math.max(0, storedVolume)));
   }, []);
 
   useEffect(() => {
@@ -76,18 +89,17 @@ export function PoetryBook({ slug }: { slug: string }) {
 
   useEffect(() => {
     const audio = audioRef.current;
-    if (!audio) return;
-    if (!audioSrc || !soundOn) {
-      fadeOut(audio);
+    if (!audio || !soundOn || !audioSrc) return;
+    const absolute = new URL(audioSrc, window.location.href).href;
+    if (audio.src !== absolute) audio.src = audioSrc;
+    audio.loop = true;
+    audio.volume = volume;
+    if (paused) {
+      audio.pause();
       return;
     }
-    if (audio.src !== new URL(audioSrc, window.location.href).href) audio.src = audioSrc;
-    audio.volume = 0;
-    audio.play().then(() => fadeTo(audio, 0.18)).catch(() => {
-      setSoundOn(false);
-      window.localStorage.setItem(SOUND_KEY, "off");
-    });
-  }, [audioSrc, soundOn, slug]);
+    if (audio.paused) void audio.play().catch(() => undefined);
+  }, [audioSrc, paused, soundOn, slug, volume]);
 
   const go = useCallback(
     (nextSlug: string | null, dir: "next" | "prev") => {
@@ -95,11 +107,16 @@ export function PoetryBook({ slug }: { slug: string }) {
       setTocOpen(false);
       setSearchOpen(false);
       setShare(null);
+      if (nextSlug === COVER_SLUG) {
+        void chrome.exitFullscreen();
+        router.push("/");
+        return;
+      }
       setDirection(dir);
       window.sessionStorage.setItem("poetry-dir", dir);
       router.push(`/poetry/${nextSlug}`, { scroll: false });
     },
-    [router],
+    [chrome, router],
   );
 
   const goPrev = useCallback(() => go(adjacent.prev, "prev"), [adjacent.prev, go]);
@@ -160,14 +177,66 @@ export function PoetryBook({ slug }: { slug: string }) {
     window.localStorage.setItem(THEME_KEY, next ? "dark" : "light");
   }
 
+  function playTrack(id: string) {
+    const audio = audioRef.current;
+    const next = tracks.find((item) => item.id === id) ?? tracks[0];
+    setTrackId(next.id);
+    window.localStorage.setItem(TRACK_KEY, next.id);
+    if (!audio) return Promise.reject(new Error("audio"));
+    const absolute = new URL(next.src, window.location.href).href;
+    if (audio.src !== absolute) audio.src = next.src;
+    audio.loop = true;
+    audio.volume = volume;
+    setPaused(false);
+    return audio.play();
+  }
+
   function toggleSound() {
     const next = !soundOn;
     setSoundOn(next);
     window.localStorage.setItem(SOUND_KEY, next ? "on" : "off");
-    if (!audioSrc) {
-      setNoteError(false);
-      setNote("ለዚህ መጽሐፍ ድምፅ አልተቀመጠም።");
+    setNoteError(false);
+    setNote("");
+    if (!next) {
+      audioRef.current?.pause();
+      return;
     }
+    void playTrack(trackId).catch(() => {
+      setSoundOn(false);
+      window.localStorage.setItem(SOUND_KEY, "off");
+      setNote("ድምፁ አልተጫወተም። እንደገና ይሞክሩ።");
+    });
+  }
+
+  function togglePause() {
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (paused) {
+      setPaused(false);
+      audio.volume = volume;
+      void audio.play().catch(() => setNote("ድምፁ አልተጫወተም። እንደገና ይሞክሩ።"));
+      return;
+    }
+    setPaused(true);
+    audio.pause();
+  }
+
+  function changeVolume(next: number) {
+    const level = Math.min(1, Math.max(0, next));
+    setVolume(level);
+    window.localStorage.setItem(VOLUME_KEY, String(level));
+    if (audioRef.current) audioRef.current.volume = level;
+  }
+
+  function chooseTrack(id: string) {
+    setSoundOn(true);
+    window.localStorage.setItem(SOUND_KEY, "on");
+    setNote("");
+    void playTrack(id).catch(() => {
+      setSoundOn(false);
+      window.localStorage.setItem(SOUND_KEY, "off");
+      setNote("ድምፁ አልተጫወተም። እንደገና ይሞክሩ።");
+    });
   }
 
   async function onShare() {
@@ -216,12 +285,35 @@ export function PoetryBook({ slug }: { slug: string }) {
   return (
     <div className={`bk-stage${opening ? " is-opening" : ""}`}>
       <header className="bk-top">
-        <Link href="/" className="bk-mark" onClick={() => void chrome.exitFullscreen()}>
-          {book.title}
-        </Link>
+        <div className="bk-brand">
+          <Link
+            href="/"
+            className="bk-mark"
+            aria-label="ወደ ሽፋን ተመለስ"
+            onClick={(event) => {
+              event.preventDefault();
+              go(COVER_SLUG, "prev");
+            }}
+          >
+            <span>{book.title}</span>
+            <span className="bk-mark-hint">ሽፋን</span>
+          </Link>
+          <p className="bk-credit">{book.credit}</p>
+        </div>
         <ProgressIndicator number={poem?.number} ended={ended} />
       </header>
-      <div ref={swipeRef} className={`bk-spread is-${direction}`} key={slug}>
+      <div className="bk-frame">
+        <button
+          className="bk-side is-prev"
+          type="button"
+          onClick={goPrev}
+          disabled={!adjacent.prev}
+          aria-keyshortcuts="ArrowLeft"
+          aria-label={adjacent.prev === COVER_SLUG ? "ወደ ሽፋን ተመለስ" : "ቀዳሚ ግጥም"}
+        >
+          <IconPrev />
+        </button>
+        <div ref={swipeRef} className={`bk-spread is-${direction}`} key={slug}>
         {ended ? (
           <EndOfBook
             onReadAgain={() => go("1", "next")}
@@ -233,15 +325,22 @@ export function PoetryBook({ slug }: { slug: string }) {
         ) : poem ? (
           <BookSpread poem={poem} priority />
         ) : null}
+        </div>
+        <button
+          className="bk-side is-next"
+          type="button"
+          onClick={goNext}
+          disabled={!adjacent.next}
+          aria-keyshortcuts="ArrowRight"
+          aria-label="ቀጣይ ግጥም"
+        >
+          <IconNext />
+        </button>
       </div>
       <p className="sr-only" aria-live="polite">
         {ended ? "መጨረሻ" : `${poem?.number} ከ ${poemCount}. ${poem?.title}`}
       </p>
       <BookControls
-        onPrev={goPrev}
-        onNext={goNext}
-        canPrev={Boolean(adjacent.prev)}
-        canNext={Boolean(adjacent.next)}
         onToc={() => setTocOpen(true)}
         onSearch={() => setSearchOpen(true)}
         onTheme={toggleTheme}
@@ -249,8 +348,13 @@ export function PoetryBook({ slug }: { slug: string }) {
         onFullscreen={() => void chrome.toggleFullscreen()}
         fullscreen={chrome.fullscreen}
         soundOn={soundOn}
-        hasAudio={Boolean(audioSrc)}
+        paused={paused}
+        volume={volume}
+        trackId={track.id}
         onSound={toggleSound}
+        onPause={togglePause}
+        onVolume={changeVolume}
+        onTrack={chooseTrack}
         onShare={() => void onShare()}
         pdfStatus={pdfStatus}
         onDownload={() => void onDownload()}
@@ -263,31 +367,7 @@ export function PoetryBook({ slug }: { slug: string }) {
       ) : null}
       {searchOpen ? <PoemSearch onClose={() => setSearchOpen(false)} onSelect={selectPoem} /> : null}
       {share ? <ShareSheet title={share.title} url={share.url} onClose={() => setShare(null)} /> : null}
-      <audio ref={audioRef} className="sr-only" preload="none" loop />
+      <audio ref={audioRef} className="sr-only" preload="auto" loop playsInline />
     </div>
   );
-}
-
-function fadeTo(audio: HTMLAudioElement, target: number) {
-  audio.volume = 0;
-  const step = () => {
-    if (!audio.paused && audio.volume < target) {
-      audio.volume = Math.min(target, audio.volume + 0.02);
-      window.requestAnimationFrame(step);
-    }
-  };
-  window.requestAnimationFrame(step);
-}
-
-function fadeOut(audio: HTMLAudioElement) {
-  const step = () => {
-    if (audio.volume > 0.02) {
-      audio.volume = Math.max(0, audio.volume - 0.04);
-      window.requestAnimationFrame(step);
-    } else {
-      audio.pause();
-      audio.volume = 0;
-    }
-  };
-  if (!audio.paused) window.requestAnimationFrame(step);
 }

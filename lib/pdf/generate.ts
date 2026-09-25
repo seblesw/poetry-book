@@ -129,6 +129,7 @@ async function build(): Promise<Uint8Array> {
   ]);
 
   pdf.setTitle(book.title);
+  pdf.setAuthor(book.poet);
   pdf.setSubject("Poetry / Digital Poetry Book");
   pdf.setKeywords(book.keywords);
   pdf.setLanguage("am");
@@ -279,8 +280,13 @@ function drawCover(page: PDFPage, image: PDFImage | null, fonts: Fonts) {
     y -= 46;
   }
   drawRuns(page, "ሃያ ስምንት አጫጭር ግጥሞች", x, y - 8, 13, rgb(0.86, 0.78, 0.68), fonts);
-  page.drawRectangle({ x, y: 150, width: 64, height: 1.25, color: GOLD });
-  drawRuns(page, "ዲጂታል የግጥም መጽሐፍ", x, 118, 11, GOLD, fonts);
+  page.drawRectangle({ x, y: 176, width: 64, height: 1.25, color: GOLD });
+  let creditY = 150;
+  for (const line of wrap(book.credit, fonts, 12, HALF - 96)) {
+    drawRuns(page, line, x, creditY, 12, rgb(0.9, 0.84, 0.74), fonts);
+    creditY -= 18;
+  }
+  drawRuns(page, "ዲጂታል የግጥም መጽሐፍ", x, 88, 11, GOLD, fonts);
 }
 
 function drawTitlePage(page: PDFPage, fonts: Fonts, pageNo: number) {
@@ -295,6 +301,12 @@ function drawTitlePage(page: PDFPage, fonts: Fonts, pageNo: number) {
   }
   const series = `${book.series}  ·  ${book.issue}`;
   drawRuns(page, series, (PAGE_W - widthOf(series, fonts, 13)) / 2, y - 6, 13, MUTED, fonts);
+  const creditLines = wrap(book.credit, fonts, 13, 560);
+  let creditY = y - 48;
+  for (const line of creditLines) {
+    drawRuns(page, line, (PAGE_W - widthOf(line, fonts, 13)) / 2, creditY, 13, INK, fonts);
+    creditY -= 22;
+  }
   const sub = "ሃያ ስምንት አጫጭር ግጥሞች";
   drawRuns(page, sub, (PAGE_W - widthOf(sub, fonts, 12)) / 2, 150, 12, MUTED, fonts);
   footer(page, fonts, pageNo);

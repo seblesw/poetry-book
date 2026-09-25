@@ -29,6 +29,7 @@ export function EndOfBook({
         <hr className="bk-rule" />
         <p>{book.title}</p>
         <p>ሃያ ስምንት አጫጭር ግጥሞች።</p>
+        <p>{book.credit}</p>
         <div className="bk-end-actions">
           <button type="button" onClick={onReadAgain}>
             እንደገና አንብብ

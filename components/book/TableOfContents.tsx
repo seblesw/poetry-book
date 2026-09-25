@@ -34,6 +34,12 @@ export function TableOfContents({
           </button>
         </div>
         <ol className="bk-toc-list">
+          <li>
+            <button type="button" onClick={() => onSelect("cover")}>
+              <span className="bk-num">ሽፋን</span>
+              <span>የመጽሐፉ ሽፋን</span>
+            </button>
+          </li>
           {poems.map((poem: Poem) => (
             <li key={poem.id}>
               <button type="button" aria-current={poem.slug === current ? "true" : undefined} onClick={() => onSelect(poem.slug)}>

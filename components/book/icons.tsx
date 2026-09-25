@@ -49,11 +49,15 @@ export function IconExpand() {
     </svg>
   );
 }
-export function IconSound() {
+export function IconSound({ off = false }: { off?: boolean }) {
   return (
     <svg viewBox="0 0 24 24" aria-hidden="true">
       <path d="M5 10 H8 L13 6 V18 L8 14 H5 Z" fill="none" stroke="currentColor" strokeWidth="1.6" />
-      <path d="M16 9.5 A3.5 3.5 0 0 1 16 14.5" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      {off ? (
+        <path d="M16 9 L21 15 M21 9 L16 15" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      ) : (
+        <path d="M16 9.5 A3.5 3.5 0 0 1 16 14.5 M18.2 7.2 A6.2 6.2 0 0 1 18.2 16.8" fill="none" stroke="currentColor" strokeWidth="1.6" />
+      )}
     </svg>
   );
 }

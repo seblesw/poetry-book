@@ -24,6 +24,7 @@ export const metadata: Metadata = {
     template: `%s · ${book.title}`,
   },
   description: book.description,
+  authors: [{ name: book.poet }],
   keywords: [...book.keywords],
   openGraph: {
     title: book.title,

@@ -1,16 +1,13 @@
 "use client";
 
 import Image from "next/image";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { book } from "@/content/book";
 
 export function BookCover() {
-  const router = useRouter();
-
-  function openBook() {
+  function rememberOpen() {
     window.sessionStorage.setItem("poetry-open", "1");
     window.sessionStorage.setItem("poetry-dir", "next");
-    router.push("/poetry/1");
   }
 
   return (
@@ -26,9 +23,10 @@ export function BookCover() {
           <h1>{book.title}</h1>
           <hr className="cv-rule" />
           <p className="cv-sub">ሃያ ስምንት አጫጭር ግጥሞች</p>
-          <button className="cv-open" type="button" onClick={openBook}>
+          <p className="cv-credit">{book.credit}</p>
+          <Link className="cv-open" href="/poetry/1" onClick={rememberOpen}>
             መጽሐፉን ክፈት
-          </button>
+          </Link>
         </div>
       </article>
     </main>
