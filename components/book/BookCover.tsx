@@ -22,7 +22,7 @@ export function BookCover() {
           </p>
           <h1>{book.title}</h1>
           <hr className="cv-rule" />
-          <p className="cv-sub">ሃያ ስምንት አጫጭር የፍቅር ግጥሞች</p>
+          <p className="cv-sub">ሃያ ስምንት ማራኪ የፍቅር ግጥሞች</p>
           <p className="cv-credit">{book.credit}</p>
           <Link className="cv-open" href="/poetry/1" onClick={rememberOpen}>
             መጽሐፉን ክፈት
